@@ -1,0 +1,17 @@
+{
+  "name": "paint-shape",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Christian Gann <guo.guo.gan@gmail.com>",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "build:bundle": "esbuild src/index.ts --bundle --minify --sourcemap --outfile=dist/paint-shape.min.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.9",
+    "terser": "^5.43.1",
+    "typescript": "^5.9.2"
+  }
+}
