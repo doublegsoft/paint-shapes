@@ -5,29 +5,27 @@
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
 
-import { Point } from "./Point";
-import { Rectangle } from "./Rectangle";
+// @ts-ignore
+import { Circle, Point } from "../../src";
 
-export class Square extends Rectangle {
-  
-  /** @param topLeft   the upper‑left corner of the square
-   *  @param side      must be > 0
-   */
-  constructor(topLeft: Point, side: number) {
-    if (side <= 0) {
-      throw new Error('Side length must be > 0.');
-    }
-    // width = height = side
-    super(topLeft, side, side);
-  }
+describe('Circle Shape Spec', () => {
 
-  /* ---------------------------------  Convenience  --------------------------------- */
-  /** Read‑only side length (same as width or height). */
-  get sideLength(): number {
-    return this.width;          // width === height by construction
-  }
+  it('contains a point', () => {
+    const circle = new Circle(new Point(100, 100), 10);
+    const containing = circle.contains(new Point(95, 95));
+    expect(containing).toEqual(true);
+  });
 
-  contains(point: Point): boolean {
-    throw new Error("Method not implemented.");
-  }
-}
+  it('not contain a point', () => {
+    const circle = new Circle(new Point(100, 100), 10);
+    const containing = circle.contains(new Point(115, 115));
+    expect(containing).toEqual(false);
+  });
+
+  it('check offset', () => {
+    const circle = new Circle(new Point(100, 100), 10);
+    const offset = circle.offset(new Point(95, 95));
+    expect(offset).toEqual(new Point(5, 5));
+  });
+
+});

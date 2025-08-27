@@ -9,7 +9,7 @@ import { Shape } from "./Shape";
 import { Point } from "./Point";
 
 export class Rectangle extends Shape {
-  
+
   /**
    * @param topLeft  the upper‑left corner of the rectangle
    * @param width    must be > 0
@@ -34,17 +34,18 @@ export class Rectangle extends Shape {
     }
   }
 
-  /* ----- Cloning (used by Shape.translate) ----- */
   protected cloneWithPoints(newPoints: Point[]): this {
-    // The first point is always the new top‑left.
     return new Rectangle(newPoints[0], this.width, this.height) as this;
   }
-
 
   draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath();
     ctx.rect(this.topLeft.x, this.topLeft.y, this.width, this.height);
     ctx.fill();
     ctx.stroke();
+  }
+
+  contains(point: Point): boolean {
+    throw new Error("Method not implemented.");
   }
 }

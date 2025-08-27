@@ -5,29 +5,42 @@
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
 
-import { Point } from "./Point";
-import { Rectangle } from "./Rectangle";
+export class Color {
 
-export class Square extends Rectangle {
-  
-  /** @param topLeft   the upper‑left corner of the square
-   *  @param side      must be > 0
-   */
-  constructor(topLeft: Point, side: number) {
-    if (side <= 0) {
-      throw new Error('Side length must be > 0.');
-    }
-    // width = height = side
-    super(topLeft, side, side);
+  public static readonly transparent: Color = new Color(255,255,255, 1);
+
+  public static readonly white = new Color(255, 255, 255);
+
+  public static readonly black = new Color(0, 0, 0);
+
+  private _red: number = 0;
+
+  private _green: number = 0;
+
+  private _blue: number = 0;
+
+  private _alpha: number = 1;
+
+  constructor(red: number, green: number, blue: number, alpha?: number) {
+    this._red = red;
+    this._green = green;
+    this._blue = blue;
+    this._alpha = alpha || 1;
   }
 
-  /* ---------------------------------  Convenience  --------------------------------- */
-  /** Read‑only side length (same as width or height). */
-  get sideLength(): number {
-    return this.width;          // width === height by construction
+  set red(value: number) {
+    this._red = value;
   }
 
-  contains(point: Point): boolean {
-    throw new Error("Method not implemented.");
+  set green(value: number) {
+    this._green = value;
+  }
+
+  set blue(value: number) {
+    this._blue = value;
+  }
+
+  set alpha(value: number) {
+    this._alpha = value;
   }
 }
