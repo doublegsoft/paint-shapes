@@ -21,7 +21,7 @@ import {Color} from "./Color";
  */
 export abstract class Shape {
 
-  private _cornerRadius: number = 0;
+  private _borderRadius: number = 0;
 
   private _foregroundColor: Color = Color.black;
 
@@ -49,26 +49,6 @@ export abstract class Shape {
       throw new Error('A shape must have at least one point.');
     }
     this.points = [...points]; // shallow copy for safety
-  }
-
-  /** @returns the number of vertices */
-  get vertexCount(): number {
-    return this.points.length;
-  }
-
-  /** @returns a shallow copy of the points array */
-  getVertices(): Point[] {
-    return [...this.points];
-  }
-
-  /** @returns the bounding box of the shape */
-  get boundingBox(): { min: Point; max: Point } {
-    const xs = this.points.map(p => p.x);
-    const ys = this.points.map(p => p.y);
-    return {
-      min: new Point(Math.min(...xs), Math.min(...ys)),
-      max: new Point(Math.max(...xs), Math.max(...ys)),
-    };
   }
 
   /**
@@ -115,13 +95,6 @@ export abstract class Shape {
     return new Point(point.x - topLeft.x, point.y - topLeft.y);
   }
 
-  set cornerRadius(value: number) {
-    if (value < 0) {
-      throw new Error('Age cannot be negative');
-    }
-    this._cornerRadius = value;
-  }
-
   /**
    * Checks this shape contain the given point.
    * 
@@ -129,5 +102,45 @@ export abstract class Shape {
    *      the point
    */
   abstract contains(point: Point): boolean;
+
+  set foregroundColor(value: Color) {
+    this._foregroundColor = value;
+  }
+
+  get foregroundColor() {
+    return this._foregroundColor;
+  }
+
+  set backgroundColor(value: Color) {
+    this._backgroundColor = value;
+  }
+
+  get backgroundColor() {
+    return this._backgroundColor;
+  }
+
+  set borderColor(value: Color) {
+    this._borderColor = value;
+  }
+
+  get borderColor() {
+    return this._borderColor;
+  }
+
+  set borderWidth(value: number) {
+    this._borderWidth = value;
+  }
+
+  get borderWidth() {
+    return this._borderWidth;
+  }
+
+  set borderRadius(value: number) {
+    this._borderRadius = value;
+  }
+
+  get borderRadius() {
+    return this._borderRadius;
+  }
 
 }

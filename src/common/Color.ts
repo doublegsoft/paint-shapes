@@ -19,13 +19,13 @@ export class Color {
 
   private _blue: number = 0;
 
-  private _alpha: number = 1;
+  private _alpha: number = 0;
 
   constructor(red: number, green: number, blue: number, alpha?: number) {
     this._red = red;
     this._green = green;
     this._blue = blue;
-    this._alpha = alpha || 1;
+    this._alpha = alpha || 0;
   }
 
   set red(value: number) {
