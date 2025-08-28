@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",           // ESModules – ESBuild will bundle
-    "outDir": "./dist",           // Output folder
+    "module": "ESNext",
+    "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

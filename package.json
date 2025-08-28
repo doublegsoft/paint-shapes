@@ -1,5 +1,5 @@
 {
-  "name": "paint-shape",
+  "name": "paint-shapes",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -8,6 +8,9 @@
   "main": "index.js",
   "scripts": {
     "build:bundle": "esbuild src/index.ts --bundle --minify --sourcemap --outfile=dist/paint-shape.min.js"
+  },
+  "dependencies": {
+
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
