@@ -6,7 +6,7 @@
 */
 
 import { Shape } from "./Shape";
-import { Point } from "./Point";
+import { Point } from "../common/Point";
 
 export class Rectangle extends Shape {
 

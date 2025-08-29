@@ -20,7 +20,7 @@ export class Point {
   public y: number;
 
   /** Z coordinate */
-  public z?: number;
+  public z?: number = 0;
 
   /**
    * Constructs a new Point.
@@ -33,6 +33,8 @@ export class Point {
     this.y = y;
     if (typeof z !== 'undefined') {
       this.z = z;
+    } else {
+      this.z = 0;
     }
   }
 

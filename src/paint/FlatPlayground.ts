@@ -4,30 +4,32 @@
 ** ██─▄▄▄██─▀─███─███─█▄▀─████─██████████▄▄▄▄─█─▄─██─▀─███─▄▄▄██─▄█▀█▄▄▄▄─█
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
+import { Shape } from "@/shape/Shape";
 
-import { Point } from "./Point";
-import { Rectangle } from "./Rectangle";
+export class FlatPlayground {
 
-export class Square extends Rectangle {
-  
-  /** @param topLeft   the upper‑left corner of the square
-   *  @param side      must be > 0
-   */
-  constructor(topLeft: Point, side: number) {
-    if (side <= 0) {
-      throw new Error('Side length must be > 0.');
+  private _width: number = 0;
+
+  private _height: number = 0;
+
+  private _shapes: Shape[] = [];
+
+  private _ctx: CanvasRenderingContext2D | null = null;
+
+  constructor(ctx: CanvasRenderingContext2D) {
+    this._ctx = ctx;
+  }
+
+  render() {
+    const shapes = this._shapes.sort((a, b) => a.depth - a.depth);
+    for (let i = 0; i < shapes.length; i++) {
+      const shape = shapes[i];
     }
-    // width = height = side
-    super(topLeft, side, side);
   }
 
-  /* ---------------------------------  Convenience  --------------------------------- */
-  /** Read‑only side length (same as width or height). */
-  get sideLength(): number {
-    return this.width;          // width === height by construction
+  addShape(shape: Shape) {
+    this._shapes.push(shape);
+    this.render();
   }
 
-  contains(point: Point): boolean {
-    throw new Error("Method not implemented.");
-  }
 }

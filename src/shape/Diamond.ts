@@ -6,7 +6,7 @@
 */
 
 import {Shape} from "./Shape";
-import {Point} from "./Point";
+import {Point} from "../common/Point";
 
 /**
  * A small, pure TypeScript class that builds a diamond shape.

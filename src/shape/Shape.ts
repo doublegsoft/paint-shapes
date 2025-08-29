@@ -5,8 +5,8 @@
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
 
-import { Point } from "./Point";
-import {Color} from "./Color";
+import { Point } from "../common/Point";
+import {Color} from "../common/Color";
 
 /**
  * Common contract for all geometric shapes.
@@ -38,7 +38,7 @@ export abstract class Shape {
    * outside the class.  Sub‑classes can add helper methods that expose a
    * mutable view if they need to.
    */
-  protected readonly points: ReadonlyArray<Point>;
+  protected readonly _points: ReadonlyArray<Point>;
 
   /**
    * @param points List of vertices that define the shape.
@@ -48,60 +48,8 @@ export abstract class Shape {
     if (points.length == 0) {
       throw new Error('A shape must have at least one point.');
     }
-    this.points = [...points]; // shallow copy for safety
+    this._points = [...points]; // shallow copy for safety
   }
-
-  /**
-   * Translates (moves) the shape by a vector.
-   *
-   * The concrete shape can choose to either mutate the existing points or
-   * return a new shape instance – here we mutate in place for simplicity.
-   */
-  translate(nx: number, ny: number): void {
-    const p= this.points[0];
-    const dx= p.x - nx;
-    const dy= p.y - ny;
-    for (let i= 0; i < this.points.length; i++) {
-      const p= this.points[i];
-      p.x = p.x - dx;
-      p.y = p.y - dy;
-    }
-  }
-
-  /** 
-   * Rotates the shape around a pivot point by a given angle (in degrees). 
-   */
-  rotate(angleDeg: number, pivot: Point = new Point(0, 0)): void {
-    const rad = (angleDeg * Math.PI) / 180;
-    const cos = Math.cos(rad);
-    const sin = Math.sin(rad);
-
-    for (let i = 0; i < this.points.length; i++) {
-      const p = this.points[i];
-      const x = p.x - pivot.x;
-      const y = p.y - pivot.y;
-      const nx = x * cos - y * sin + pivot.x;
-      const ny = x * sin + y * cos + pivot.y;
-      p.x = nx;
-      p.y = ny;
-    }
-  }
-
-  /**
-   * Gets offset relative to the top-left point according to the given point.
-   */
-  offset(point: Point): Point {
-    const topLeft = this.points[0];
-    return new Point(point.x - topLeft.x, point.y - topLeft.y);
-  }
-
-  /**
-   * Checks this shape contain the given point.
-   * 
-   * @param point 
-   *      the point
-   */
-  abstract contains(point: Point): boolean;
 
   set foregroundColor(value: Color) {
     this._foregroundColor = value;
@@ -142,5 +90,64 @@ export abstract class Shape {
   get borderRadius() {
     return this._borderRadius;
   }
+
+  /**
+   * if in 2d context, depth means draw order for shapes.
+   */
+  get depth(): number {
+    return this._points[0].z || 0;
+  }
+
+  /**
+   * Translates (moves) the shape by a vector.
+   *
+   * The concrete shape can choose to either mutate the existing points or
+   * return a new shape instance – here we mutate in place for simplicity.
+   */
+  translate(nx: number, ny: number): void {
+    const p= this._points[0];
+    const dx= p.x - nx;
+    const dy= p.y - ny;
+    for (let i= 0; i < this._points.length; i++) {
+      const p= this._points[i];
+      p.x = p.x - dx;
+      p.y = p.y - dy;
+    }
+  }
+
+  /** 
+   * Rotates the shape around a pivot point by a given angle (in degrees). 
+   */
+  rotate(angleDeg: number, pivot: Point = new Point(0, 0)): void {
+    const rad = (angleDeg * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+
+    for (let i = 0; i < this._points.length; i++) {
+      const p = this._points[i];
+      const x = p.x - pivot.x;
+      const y = p.y - pivot.y;
+      const nx = x * cos - y * sin + pivot.x;
+      const ny = x * sin + y * cos + pivot.y;
+      p.x = nx;
+      p.y = ny;
+    }
+  }
+
+  /**
+   * Gets offset relative to the top-left point according to the given point.
+   */
+  offset(point: Point): Point {
+    const topLeft = this._points[0];
+    return new Point(point.x - topLeft.x, point.y - topLeft.y);
+  }
+
+  /**
+   * Checks this shape contain the given point.
+   * 
+   * @param point 
+   *      the point
+   */
+  abstract contains(point: Point): boolean;
 
 }
