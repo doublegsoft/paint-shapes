@@ -7,6 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "test": "npx jest",
     "build:debug": "esbuild src/index.ts --bundle --platform=browser --target=es6 --format=esm --sourcemap --outfile=demo/paint-shapes.js",
     "build:bundle": "esbuild src/index.ts --bundle --platform=browser --target=es6 --format=esm --minify --sourcemap --outfile=dist/paint-shapes.min.js",
     "demo": "ts-node-dev demo/server.ts"

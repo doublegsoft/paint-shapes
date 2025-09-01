@@ -9,4 +9,8 @@ module.exports = {
   testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
   collectCoverage: true,
   coverageReporters: ['json', 'lcov', 'text', 'clover'],
+  moduleNameMapper: {
+    // ^@/foo/bar  → <rootDir>/src/foo/bar
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 };

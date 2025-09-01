@@ -6,7 +6,9 @@
 */
 
 // @ts-ignore
-import { Circle, Point } from "../../src";
+import { Circle } from "@/shape/Circle";
+// @ts-ignore
+import { Point } from "@/common/Point";
 
 describe('Circle Shape Spec', () => {
 

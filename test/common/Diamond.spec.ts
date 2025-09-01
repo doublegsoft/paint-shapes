@@ -6,7 +6,9 @@
 */
 
 // @ts-ignore
-import { Diamond, Point } from "../../src";
+import { Diamond } from "@/shape/Diamond";
+// @ts-ignore
+import { Point } from "@/common/Point";
 
 describe('Diamond Shape Spec', () => {
 
