@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test 1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<canvas id="canvas" width="1000" height="600" style="width: 500px; height: 300px;"></canvas>
+</body>
+</html>
+<script src="./paint-shapes.js" type="application/javascript"></script>
+<script>
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext("2d");
+var playground = new FlatPlayground(ctx);
+var circle = new Circle(new Point(100, 100), 50);
+circle.backgroundColor = new Color(255, 128, 56);
+circle.borderColor = new Color(12, 99, 255);
+circle.borderWidth = 10;
+playground.addShape(circle);
+</script>

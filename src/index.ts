@@ -5,14 +5,16 @@
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
 
-export { Point } from "@/common/Point";
-export { Color } from "@/common/Color";
+import "@/common/Point";
+import "@/common/Color";
 
-export { Shape } from "@/shape/Shape";
-export { Square } from "@/shape/Square";
-export { Circle } from "@/shape/Circle";
-export { Diamond } from "@/shape/Diamond";
-export { Rectangle } from "@/shape/Rectangle";
+import "@/shape/Shape";
+import "@/shape/Square";
+import "@/shape/Circle";
+import "@/shape/Diamond";
+import "@/shape/Rectangle";
 
-export { FlatPlayground } from "@/paint/FlatPlayground";
-export { SolidPlayground } from "@/paint/SolidPlayground";
+import "@/paint/FlatPlayground";
+import "@/paint/SolidPlayground";
+
+export {};

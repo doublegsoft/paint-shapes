@@ -4,7 +4,7 @@
 ** ██─▄▄▄██─▀─███─███─█▄▀─████─██████████▄▄▄▄─█─▄─██─▀─███─▄▄▄██─▄█▀█▄▄▄▄─█
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
-import {Point} from "../common/Point";
+import {Point} from "@/common/Point";
 import {Shape} from "./Shape";
 
 /**
@@ -27,9 +27,7 @@ export class Circle extends Shape {
   private _center: Point;
 
   constructor(center: Point, radius: number) {
-    const pts = [
-      center           // bottom‑left
-    ];
+    const pts = [center];
     super(pts);
 
     if (radius < 0) {
@@ -45,6 +43,15 @@ export class Circle extends Shape {
 
   set radius(value: number) {
     this._radius = value;
+  }
+
+  get center(): Point {
+    return this._center;
+  }
+
+  set center(point: Point) {
+    this._center = point;
+    this._points[0] = this._center;
   }
 
   get area(): number {

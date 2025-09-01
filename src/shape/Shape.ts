@@ -38,7 +38,7 @@ export abstract class Shape {
    * outside the class.  Sub‑classes can add helper methods that expose a
    * mutable view if they need to.
    */
-  protected readonly _points: ReadonlyArray<Point>;
+  protected _points: Array<Point>;
 
   /**
    * @param points List of vertices that define the shape.

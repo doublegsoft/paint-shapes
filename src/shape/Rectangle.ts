@@ -9,6 +9,9 @@ import { Shape } from "./Shape";
 import { Point } from "../common/Point";
 
 export class Rectangle extends Shape {
+  public get topLeft(): Point {
+      return this._topLeft;
+  }
 
   /**
    * @param topLeft  the upper‑left corner of the rectangle
@@ -16,7 +19,7 @@ export class Rectangle extends Shape {
    * @param height   must be > 0
    */
   constructor(
-    public readonly topLeft: Point,
+    private readonly _topLeft: Point,
     public readonly width: number,
     public readonly height: number
   ) {

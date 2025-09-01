@@ -5,38 +5,35 @@
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
 
-import { Point } from "../common/Point";
-import { Rectangle } from "./Rectangle";
+import {Shape} from "@/shape/Shape";
+import {ShapeRenderer} from "@/renderer/ShapeRenderer";
 
-export class Square extends Rectangle {
+export class Connection {
 
-  private _side: number = 0;
+  private readonly _source: Shape;
 
-  constructor(topLeft: Point, side: number) {
-    if (side <= 0) {
-      throw new Error('Side length must be > 0.');
-    }
-    super(topLeft, side, side);
-    this._side = side;
+  private readonly _target: Shape;
+
+  private _label: string = '';
+
+  constructor(source: Shape, target: Shape) {
+    this._source = source;
+    this._target = target;
   }
 
-  get topLeft(): Point {
-    return this._points[0];
+  get source(): Shape {
+    return this._source;
   }
 
-  set topLeft(value: Point) {
-    this._points[0] = value;
+  get target(): Shape {
+    return this._target;
   }
 
-  get side(): number {
-    return this._side;
+  get label() {
+    return this._label;
   }
 
-  set side(value: number) {
-    this._side = value;
-  }
-
-  contains(point: Point): boolean {
-    throw new Error("Method not implemented.");
+  set label(label: string) {
+    this._label = label;
   }
 }

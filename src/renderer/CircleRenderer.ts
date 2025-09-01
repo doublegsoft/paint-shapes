@@ -4,39 +4,28 @@
 ** ██─▄▄▄██─▀─███─███─█▄▀─████─██████████▄▄▄▄─█─▄─██─▀─███─▄▄▄██─▄█▀█▄▄▄▄─█
 ** ▀▄▄▄▀▀▀▄▄▀▄▄▀▄▄▄▀▄▄▄▀▀▄▄▀▀▄▄▄▀▀▀▀▀▀▀▀▀▄▄▄▄▄▀▄▀▄▀▄▄▀▄▄▀▄▄▄▀▀▀▄▄▄▄▄▀▄▄▄▄▄▀
 */
+import { Shape } from "@/shape/Shape";
+import { Circle } from "@/shape/Circle";
+import { ShapeRenderer } from "@/renderer/ShapeRenderer";
 
-import { Point } from "../common/Point";
-import { Rectangle } from "./Rectangle";
+export class CircleRenderer extends ShapeRenderer {
 
-export class Square extends Rectangle {
+  render(ctx: CanvasRenderingContext2D, shape: Shape): void {
+    const circle = shape as Circle;
+    ctx.beginPath();
+    ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, Math.PI * 2);
+    ctx.closePath();
 
-  private _side: number = 0;
-
-  constructor(topLeft: Point, side: number) {
-    if (side <= 0) {
-      throw new Error('Side length must be > 0.');
+    if (circle.borderWidth > 0){
+      ctx.lineWidth   = circle.borderWidth;
+      ctx.strokeStyle = circle.borderColor.hex;
+      ctx.stroke();
     }
-    super(topLeft, side, side);
-    this._side = side;
+
+    if (circle.backgroundColor) {
+      ctx.fillStyle = circle.backgroundColor.hex;
+      ctx.fill();
+    }
   }
 
-  get topLeft(): Point {
-    return this._points[0];
-  }
-
-  set topLeft(value: Point) {
-    this._points[0] = value;
-  }
-
-  get side(): number {
-    return this._side;
-  }
-
-  set side(value: number) {
-    this._side = value;
-  }
-
-  contains(point: Point): boolean {
-    throw new Error("Method not implemented.");
-  }
 }

@@ -43,4 +43,16 @@ export class Color {
   set alpha(value: number) {
     this._alpha = value;
   }
+
+  get hex() {
+    const r = Math.max(0, Math.min(255, this._red));
+    const g = Math.max(0, Math.min(255, this._green));
+    const b = Math.max(0, Math.min(255, this._blue));
+
+    return ("#" +
+      ((1 << 24) + (r << 16) + (g << 8) + b)
+        .toString(16)
+        .slice(1)
+    );
+  }
 }
