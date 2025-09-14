@@ -29,7 +29,7 @@ export abstract class Shape {
 
   private _borderColor: Color = Color.transparent;
 
-  private _borderWidth: number = 2;
+  private _borderWidth: number = 0;
 
   /**
    * Ordered list of points that define the shape’s outline.
@@ -140,6 +140,10 @@ export abstract class Shape {
   offset(point: Point): Point {
     const topLeft = this._points[0];
     return new Point(point.x - topLeft.x, point.y - topLeft.y);
+  }
+
+  place(point: Point): void {
+    this._points[0] = point;
   }
 
   /**

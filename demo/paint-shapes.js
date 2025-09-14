@@ -88,7 +88,7 @@ var Shape = class {
     this._foregroundColor = Color.black;
     this._backgroundColor = Color.transparent;
     this._borderColor = Color.transparent;
-    this._borderWidth = 2;
+    this._borderWidth = 0;
     if (points.length == 0) {
       throw new Error("A shape must have at least one point.");
     }
@@ -167,19 +167,22 @@ var Shape = class {
    * Gets offset relative to the top-left point according to the given point.
    */
   offset(point) {
-    const topLeft2 = this._points[0];
-    return new Point(point.x - topLeft2.x, point.y - topLeft2.y);
+    const topLeft = this._points[0];
+    return new Point(point.x - topLeft.x, point.y - topLeft.y);
+  }
+  place(point) {
+    this._points[0] = point;
   }
 };
 
 // src/shape/Rectangle.ts
-var Rectangle = class _Rectangle extends Shape {
+var Rectangle = class extends Shape {
   /**
    * @param topLeft  the upper‑left corner of the rectangle
    * @param width    must be > 0
    * @param height   must be > 0
    */
-  constructor(_topLeft, width, height) {
+  constructor(topLeft, width, height) {
     const pts = [
       topLeft,
       new Point(topLeft.x + width, topLeft.y),
@@ -190,24 +193,15 @@ var Rectangle = class _Rectangle extends Shape {
       // bottom‑left
     ];
     super(pts);
-    this._topLeft = _topLeft;
-    this.width = width;
-    this.height = height;
+    this._width = 0;
+    this._height = 0;
     if (width <= 0 || height <= 0) {
       throw new Error("Width and height must be greater than 0.");
     }
+    this._topLeft = topLeft;
   }
   get topLeft() {
     return this._topLeft;
-  }
-  cloneWithPoints(newPoints) {
-    return new _Rectangle(newPoints[0], this.width, this.height);
-  }
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.rect(this.topLeft.x, this.topLeft.y, this.width, this.height);
-    ctx.fill();
-    ctx.stroke();
   }
   contains(point) {
     throw new Error("Method not implemented.");
@@ -216,11 +210,11 @@ var Rectangle = class _Rectangle extends Shape {
 
 // src/shape/Square.ts
 var Square = class extends Rectangle {
-  constructor(topLeft2, side) {
+  constructor(topLeft, side) {
     if (side <= 0) {
       throw new Error("Side length must be > 0.");
     }
-    super(topLeft2, side, side);
+    super(topLeft, side, side);
     this._side = 0;
     this._side = side;
   }
@@ -237,7 +231,8 @@ var Square = class extends Rectangle {
     this._side = value;
   }
   contains(point) {
-    throw new Error("Method not implemented.");
+    const topLeft = this._points[0];
+    return point.x >= topLeft.x && topLeft.x + this._side >= point.x && point.y >= topLeft.y && topLeft.y + this._side >= point.y;
   }
 };
 
@@ -269,9 +264,12 @@ var Circle = class extends Shape {
   get area() {
     return Math.PI * this._radius * this._radius;
   }
-  offset(point) {
-    const topLeft2 = new Point(this._center.x - this._radius, this._center.y - this._radius);
-    return new Point(point.x - topLeft2.x, point.y - topLeft2.y);
+  // offset(point: Point): Point {
+  //   const topLeft = new Point(this._center.x - this._radius, this._center.y - this._radius);
+  //   return new Point(point.x - topLeft.x, point.y - topLeft.y);
+  // }
+  place(point) {
+    this.center = point;
   }
   contains(point) {
     const dx = point.x - this._center.x;
@@ -317,14 +315,19 @@ var CircleRenderer = class extends ShapeRenderer {
     ctx.beginPath();
     ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, Math.PI * 2);
     ctx.closePath();
+    if (circle.backgroundColor) {
+      ctx.fillStyle = circle.backgroundColor.hex;
+      ctx.fill();
+    }
     if (circle.borderWidth > 0) {
       ctx.lineWidth = circle.borderWidth;
       ctx.strokeStyle = circle.borderColor.hex;
       ctx.stroke();
-    }
-    if (circle.backgroundColor) {
-      ctx.fillStyle = circle.backgroundColor.hex;
-      ctx.fill();
+    } else {
+      if (circle.backgroundColor) {
+        ctx.strokeStyle = circle.backgroundColor.hex;
+        ctx.stroke();
+      }
     }
   }
 };
@@ -359,11 +362,13 @@ var SquareRenderer = class extends ShapeRenderer {
 
 // src/paint/FlatPlayground.ts
 var _FlatPlayground = class _FlatPlayground {
-  constructor(ctx) {
+  constructor(ctx, width, height) {
     this._width = 0;
     this._height = 0;
     this._shapes = [];
     this._ctx = ctx;
+    this._width = width;
+    this._height = height;
   }
   render() {
     this._ctx.clearRect(0, 0, this._width, this._height);
@@ -377,8 +382,33 @@ var _FlatPlayground = class _FlatPlayground {
       }
     }
   }
+  select(x, y) {
+    let retVal = null;
+    const p = new Point(x, y);
+    for (let i = 0; i < this._shapes.length; i++) {
+      this._shapes[i].borderWidth = 0;
+      this._shapes[i].borderColor = Color.transparent;
+    }
+    for (let i = 0; i < this._shapes.length; i++) {
+      if (this._shapes[i].contains(p)) {
+        this._shapes[i].borderWidth = 2;
+        this._shapes[i].borderColor = new Color(122, 36, 188);
+        retVal = this._shapes[i];
+      }
+    }
+    this.render();
+    return retVal;
+  }
   addShape(shape) {
     this._shapes.push(shape);
+    this.render();
+  }
+  shiftShape(shape, mousepos, offset) {
+    if (shape instanceof Circle) {
+      shape.place(new Point(mousepos.x - offset.x, mousepos.y - offset.y));
+    } else {
+      shape.place(new Point(mousepos.x - offset.x, mousepos.y - offset.y));
+    }
     this.render();
   }
 };

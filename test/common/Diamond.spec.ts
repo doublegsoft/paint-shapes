@@ -13,14 +13,14 @@ import { Point } from "@/common/Point";
 describe('Diamond Shape Spec', () => {
 
   it('square-like contains a top-left point', () => {
-    const circle = new Diamond(new Point(100, 100), 20, 20);
-    const containing = circle.contains(new Point(95, 95));
+    const diamond = new Diamond(new Point(100, 100), 20, 20);
+    const containing = diamond.contains(new Point(95, 95));
     expect(containing).toEqual(true);
   });
 
   it('square-like contains a bottom-left point', () => {
-    const circle = new Diamond(new Point(100, 100), 20, 20);
-    const containing = circle.contains(new Point(95, 105));
+    const diamond = new Diamond(new Point(100, 100), 20, 20);
+    const containing = diamond.contains(new Point(95, 105));
     expect(containing).toEqual(true);
   });
 

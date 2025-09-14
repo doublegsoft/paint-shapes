@@ -58,9 +58,13 @@ export class Circle extends Shape {
     return Math.PI * this._radius * this._radius;
   }
 
-  offset(point: Point): Point {
-    const topLeft = new Point(this._center.x - this._radius, this._center.y - this._radius);
-    return new Point(point.x - topLeft.x, point.y - topLeft.y);
+  // offset(point: Point): Point {
+  //   const topLeft = new Point(this._center.x - this._radius, this._center.y - this._radius);
+  //   return new Point(point.x - topLeft.x, point.y - topLeft.y);
+  // }
+
+  place(point: Point): void {
+    this.center = point;
   }
 
   contains(point: Point): boolean {

@@ -6,17 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-<canvas id="canvas" width="1000" height="600" style="width: 500px; height: 300px;"></canvas>
+<canvas id="canvas" style="width: 500px; height: 300px;"></canvas>
 </body>
 </html>
 <script src="./paint-shapes.js" type="application/javascript"></script>
 <script>
+var scale = window.devicePixelRatio || 1;
 var canvas = document.getElementById('canvas');
+canvas.width = `${500 * scale}`;
+canvas.height = `${300 * scale}`;
 var ctx = canvas.getContext("2d");
-var playground = new FlatPlayground(ctx);
-var circle = new Circle(new Point(100, 100), 50);
+ctx.scale(scale, scale);
+
+var selectedShape = null;
+var selectedOffset = null;
+var isDragging = false;
+var playground = new FlatPlayground(ctx, 500 * scale, 300 * scale);
+
+var circle = new Circle(new Point(100, 100), 25);
 circle.backgroundColor = new Color(255, 128, 56);
-circle.borderColor = new Color(12, 99, 255);
-circle.borderWidth = 10;
 playground.addShape(circle);
+
+var square = new Square(new Point(100, 200), 50);
+square.backgroundColor = new Color(255, 128, 56);
+playground.addShape(square);
+
+canvas.addEventListener('mousedown', ev => {
+  const p = new Point(ev.layerX, ev.layerY);
+  selectedShape = playground.select(ev.layerX, ev.layerY);
+  if (selectedShape == null) {
+    return;
+  }
+  selectedOffset = selectedShape.offset(p);
+  isDragging = true;
+});
+
+canvas.addEventListener('mouseup', ev => {
+  isDragging = false;
+});
+
+canvas.addEventListener('mousemove', ev => {
+  if (!isDragging || selectedShape == null) {
+    return;
+  }
+  const p = new Point(ev.layerX, ev.layerY);
+  playground.shiftShape(selectedShape, p, selectedOffset);
+})
 </script>

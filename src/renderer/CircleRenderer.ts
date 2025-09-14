@@ -16,15 +16,20 @@ export class CircleRenderer extends ShapeRenderer {
     ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, Math.PI * 2);
     ctx.closePath();
 
+    if (circle.backgroundColor) {
+      ctx.fillStyle = circle.backgroundColor.hex;
+      ctx.fill();
+    }
+
     if (circle.borderWidth > 0){
       ctx.lineWidth   = circle.borderWidth;
       ctx.strokeStyle = circle.borderColor.hex;
       ctx.stroke();
-    }
-
-    if (circle.backgroundColor) {
-      ctx.fillStyle = circle.backgroundColor.hex;
-      ctx.fill();
+    } else {
+      if (circle.backgroundColor) {
+        ctx.strokeStyle = circle.backgroundColor.hex;
+        ctx.stroke();
+      }
     }
   }
 

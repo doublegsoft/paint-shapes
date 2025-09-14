@@ -37,6 +37,9 @@ export class Square extends Rectangle {
   }
 
   contains(point: Point): boolean {
-    throw new Error("Method not implemented.");
+    const topLeft = this._points[0];
+    return point.x >= topLeft.x && (topLeft.x + this._side) >= point.x &&
+      point.y >= topLeft.y && (topLeft.y + this._side) >= point.y;
   }
+
 }
