@@ -6,27 +6,34 @@
 */
 import { ShapeRenderer } from "@/renderer/ShapeRenderer";
 import { Shape } from "@/shape/Shape";
-import {Square} from "@/shape/Square";
+import {Diamond} from "@/shape/Diamond";
+import {Point} from "@/common/Point";
 
-export class SquareRenderer extends ShapeRenderer {
+export class DiamondRenderer extends ShapeRenderer {
 
   render(ctx: CanvasRenderingContext2D, shape: Shape): void {
-    const square = shape as Square;
-    if (square.borderRadius == 0) {
-      ctx.strokeStyle = square.borderColor.hex;
-      ctx.lineWidth = square.borderWidth;
+    const diamond = shape as Diamond;
+    const top = new Point(diamond.center.x, diamond.center.y - diamond.height / 2);
+    const right = new Point(diamond.center.x + diamond.width / 2, diamond.center.y);
+    const bottom = new Point(diamond.center.x, diamond.center.y + diamond.height / 2);
+    const left = new Point(diamond.center.x - diamond.width / 2, diamond.center.y);
 
-      if (square.backgroundColor) {
-        ctx.fillStyle = square.backgroundColor.hex;
-        ctx.fillRect(square.topLeft.x, square.topLeft.y, square.side, square.side);
-      }
-      ctx.strokeRect(square.topLeft.x, square.topLeft.y, square.side, square.side);
-    } else {
-      ShapeRenderer.renderRoundedRect(ctx,
-        square.topLeft.x, square.topLeft.y, square.side, square.side,
-        square.borderRadius, square.borderWidth, square.borderColor,
-        square.backgroundColor);
+    ctx.strokeStyle = diamond.borderColor.hex;
+    ctx.lineWidth = diamond.borderWidth;
+
+    if (diamond.backgroundColor) {
+      ctx.fillStyle = diamond.backgroundColor.hex;
     }
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(right.x, right.y);
+    ctx.lineTo(bottom.x, bottom.y);
+    ctx.lineTo(left.x, left.y);
+    ctx.lineTo(top.x, top.y);
+    ctx.closePath();
+
+    ctx.fill('nonzero');
+    ctx.stroke();
   }
 
 }

@@ -42,4 +42,13 @@ export class Square extends Rectangle {
       point.y >= topLeft.y && (topLeft.y + this._side) >= point.y;
   }
 
+  getConnectablePoints(): Point[] {
+    const ret = new Array<Point>();
+    const topLeft = this._points[0];
+    ret.push(new Point(topLeft.x + this._side / 2, topLeft.y));
+    ret.push(new Point(topLeft.x + this._side, topLeft.y + this._side / 2));
+    ret.push(new Point(topLeft.x + this._side / 2, topLeft.y + this._side));
+    ret.push(new Point(topLeft.x, topLeft.y + this._side / 2));
+    return ret;
+  }
 }

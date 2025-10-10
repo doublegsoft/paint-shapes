@@ -154,4 +154,9 @@ export abstract class Shape {
    */
   abstract contains(point: Point): boolean;
 
+  /**
+   * Gets the connectable points from shape including top-middle,
+   * right-middle, bottom-middle, bottom-middle points.
+   */
+  abstract getConnectablePoints(): Point[];
 }

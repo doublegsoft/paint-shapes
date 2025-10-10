@@ -6,7 +6,7 @@
 */
 
 import {Shape} from "./Shape";
-import {Point} from "../common/Point";
+import {Point} from "@/common/Point";
 
 /**
  * A small, pure TypeScript class that builds a diamond shape.
@@ -36,23 +36,25 @@ export class Diamond extends Shape {
     this._height = height;
   }
 
-  set center(center: Point) {
-    this._center = center;
+  public get center(): Point {
+    return this._center;
   }
 
-  set width(width: number) {
-    this._width = width;
+  public get width(): number {
+    return this._width;
   }
 
-  set height(height: number) {
-    this._height = height;
+  public get height(): number {
+    return this._height;
+  }
+
+  place(point: Point): void {
+    this._center = point;
+    this._points[0] = point;
   }
 
   offset(point: Point): Point {
-    const topLeft: Point = new Point(
-      this._center.x - this._width / 2,
-      this._center.y - this._height / 2);
-    return new Point(point.x - topLeft.x, point.y - topLeft.y);
+    return new Point(point.x - this._center.x, point.y - this._center.y);
   }
 
   contains(point: Point): boolean {
@@ -102,5 +104,15 @@ export class Diamond extends Shape {
     const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
     return u >= 0 && v >= 0 && u + v <= 1;
+  }
+
+  getConnectablePoints(): Point[] {
+    const ret = new Array<Point>();
+    const topLeft = this._points[0];
+    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y));
+    ret.push(new Point(topLeft.x + this._width, topLeft.y + this._height / 2));
+    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y + this._height));
+    ret.push(new Point(topLeft.x, topLeft.y + this._height / 2));
+    return ret;
   }
 }

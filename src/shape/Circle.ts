@@ -72,4 +72,13 @@ export class Circle extends Shape {
     const dy = point.y - this._center.y;
     return dx * dx + dy * dy <= this._radius * this._radius;
   }
+
+  getConnectablePoints(): Point[] {
+    const ret = new Array<Point>();
+    ret.push(new Point(this._center.x, this._center.y - this._radius));
+    ret.push(new Point(this._center.x + this._radius, this._center.y));
+    ret.push(new Point(this._center.x, this._center.y + this._radius));
+    ret.push(new Point(this._center.x - this._radius, this._center.y));
+    return ret;
+  }
 }

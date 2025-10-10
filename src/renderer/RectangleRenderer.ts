@@ -6,26 +6,25 @@
 */
 import { ShapeRenderer } from "@/renderer/ShapeRenderer";
 import { Shape } from "@/shape/Shape";
-import {Square} from "@/shape/Square";
+import {Rectangle} from "@/shape/Rectangle";
 
-export class SquareRenderer extends ShapeRenderer {
+export class RectangleRenderer extends ShapeRenderer {
 
   render(ctx: CanvasRenderingContext2D, shape: Shape): void {
-    const square = shape as Square;
-    if (square.borderRadius == 0) {
-      ctx.strokeStyle = square.borderColor.hex;
-      ctx.lineWidth = square.borderWidth;
-
-      if (square.backgroundColor) {
-        ctx.fillStyle = square.backgroundColor.hex;
-        ctx.fillRect(square.topLeft.x, square.topLeft.y, square.side, square.side);
+    const rect = shape as Rectangle;
+    if (rect.borderRadius == 0) {
+      ctx.strokeStyle = rect.borderColor.hex;
+      ctx.lineWidth = rect.borderWidth;
+      if (rect.backgroundColor) {
+        ctx.fillStyle = rect.backgroundColor.hex;
+        ctx.fillRect(rect.topLeft.x, rect.topLeft.y, rect.width, rect.height);
       }
-      ctx.strokeRect(square.topLeft.x, square.topLeft.y, square.side, square.side);
+      ctx.strokeRect(rect.topLeft.x, rect.topLeft.y, rect.width, rect.height);
     } else {
       ShapeRenderer.renderRoundedRect(ctx,
-        square.topLeft.x, square.topLeft.y, square.side, square.side,
-        square.borderRadius, square.borderWidth, square.borderColor,
-        square.backgroundColor);
+        rect.topLeft.x, rect.topLeft.y, rect.width, rect.height,
+        rect.borderRadius, rect.borderWidth, rect.borderColor,
+        rect.backgroundColor);
     }
   }
 

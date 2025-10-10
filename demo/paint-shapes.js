@@ -198,13 +198,36 @@ var Rectangle = class extends Shape {
     if (width <= 0 || height <= 0) {
       throw new Error("Width and height must be greater than 0.");
     }
-    this._topLeft = topLeft;
+    this._width = width;
+    this._height = height;
   }
   get topLeft() {
-    return this._topLeft;
+    return this._points[0];
+  }
+  get width() {
+    return this._width;
+  }
+  set width(value) {
+    this._width = value;
+  }
+  get height() {
+    return this._height;
+  }
+  set height(value) {
+    this._height = value;
   }
   contains(point) {
-    throw new Error("Method not implemented.");
+    const topLeft = this._points[0];
+    return point.x >= topLeft.x && topLeft.x + this._width >= point.x && point.y >= topLeft.y && topLeft.y + this._height >= point.y;
+  }
+  getConnectablePoints() {
+    const ret = new Array();
+    const topLeft = this._points[0];
+    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y));
+    ret.push(new Point(topLeft.x + this._width, topLeft.y + this._height / 2));
+    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y + this._height));
+    ret.push(new Point(topLeft.x, topLeft.y + this._height / 2));
+    return ret;
   }
 };
 
@@ -233,6 +256,15 @@ var Square = class extends Rectangle {
   contains(point) {
     const topLeft = this._points[0];
     return point.x >= topLeft.x && topLeft.x + this._side >= point.x && point.y >= topLeft.y && topLeft.y + this._side >= point.y;
+  }
+  getConnectablePoints() {
+    const ret = new Array();
+    const topLeft = this._points[0];
+    ret.push(new Point(topLeft.x + this._side / 2, topLeft.y));
+    ret.push(new Point(topLeft.x + this._side, topLeft.y + this._side / 2));
+    ret.push(new Point(topLeft.x + this._side / 2, topLeft.y + this._side));
+    ret.push(new Point(topLeft.x, topLeft.y + this._side / 2));
+    return ret;
   }
 };
 
@@ -275,6 +307,101 @@ var Circle = class extends Shape {
     const dx = point.x - this._center.x;
     const dy = point.y - this._center.y;
     return dx * dx + dy * dy <= this._radius * this._radius;
+  }
+  getConnectablePoints() {
+    const ret = new Array();
+    ret.push(new Point(this._center.x, this._center.y - this._radius));
+    ret.push(new Point(this._center.x + this._radius, this._center.y));
+    ret.push(new Point(this._center.x, this._center.y + this._radius));
+    ret.push(new Point(this._center.x - this._radius, this._center.y));
+    return ret;
+  }
+};
+
+// src/shape/Diamond.ts
+var Diamond = class extends Shape {
+  constructor(center, width, height) {
+    const pts = [center];
+    super(pts);
+    this._center = center;
+    this._width = width;
+    this._height = height;
+  }
+  get center() {
+    return this._center;
+  }
+  get width() {
+    return this._width;
+  }
+  get height() {
+    return this._height;
+  }
+  place(point) {
+    this._center = point;
+    this._points[0] = point;
+  }
+  offset(point) {
+    return new Point(point.x - this._center.x, point.y - this._center.y);
+  }
+  contains(point) {
+    let result = this.containsForRightAngleTriangle(
+      point,
+      new Point(this._center.x - this._width / 2, this._center.y),
+      new Point(this._center.x, this._center.y - this._height / 2)
+    );
+    if (result) {
+      return result;
+    }
+    result = this.containsForRightAngleTriangle(
+      point,
+      new Point(this._center.x + this._width / 2, this._center.y),
+      new Point(this._center.x, this._center.y - this._height / 2)
+    );
+    if (result) {
+      return result;
+    }
+    result = this.containsForRightAngleTriangle(
+      point,
+      new Point(this._center.x - this._width / 2, this._center.y),
+      new Point(this._center.x, this._center.y + this._height / 2)
+    );
+    if (result) {
+      return result;
+    }
+    result = this.containsForRightAngleTriangle(
+      point,
+      new Point(this._center.x + this._width / 2, this._center.y),
+      new Point(this._center.x, this._center.y + this._height / 2)
+    );
+    if (result) {
+      return result;
+    }
+    return false;
+  }
+  containsForRightAngleTriangle(point, horizontal, vertical) {
+    const v0 = { x: horizontal.x - this._center.x, y: horizontal.y - this._center.y };
+    const v1 = { x: vertical.x - this._center.x, y: vertical.y - this._center.y };
+    const v2 = { x: point.x - this._center.x, y: point.y - this._center.y };
+    const dot00 = v0.x * v0.x + v0.y * v0.y;
+    const dot01 = v0.x * v1.x + v0.y * v1.y;
+    const dot02 = v0.x * v2.x + v0.y * v2.y;
+    const dot11 = v1.x * v1.x + v1.y * v1.y;
+    const dot12 = v1.x * v2.x + v1.y * v2.y;
+    const denom = dot00 * dot11 - dot01 * dot01;
+    if (denom === 0) return false;
+    const invDenom = 1 / denom;
+    const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+    const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+    return u >= 0 && v >= 0 && u + v <= 1;
+  }
+  getConnectablePoints() {
+    const ret = new Array();
+    const topLeft = this._points[0];
+    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y));
+    ret.push(new Point(topLeft.x + this._width, topLeft.y + this._height / 2));
+    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y + this._height));
+    ret.push(new Point(topLeft.x, topLeft.y + this._height / 2));
+    return ret;
   }
 };
 
@@ -336,7 +463,7 @@ var CircleRenderer = class extends ShapeRenderer {
 var SquareRenderer = class extends ShapeRenderer {
   render(ctx, shape) {
     const square = shape;
-    if (square.borderRadius > 0) {
+    if (square.borderRadius == 0) {
       ctx.strokeStyle = square.borderColor.hex;
       ctx.lineWidth = square.borderWidth;
       if (square.backgroundColor) {
@@ -360,6 +487,59 @@ var SquareRenderer = class extends ShapeRenderer {
   }
 };
 
+// src/renderer/DiamondRenderer.ts
+var DiamondRenderer = class extends ShapeRenderer {
+  render(ctx, shape) {
+    const diamond = shape;
+    const top = new Point(diamond.center.x, diamond.center.y - diamond.height / 2);
+    const right = new Point(diamond.center.x + diamond.width / 2, diamond.center.y);
+    const bottom = new Point(diamond.center.x, diamond.center.y + diamond.height / 2);
+    const left = new Point(diamond.center.x - diamond.width / 2, diamond.center.y);
+    ctx.strokeStyle = diamond.borderColor.hex;
+    ctx.lineWidth = diamond.borderWidth;
+    if (diamond.backgroundColor) {
+      ctx.fillStyle = diamond.backgroundColor.hex;
+    }
+    ctx.beginPath();
+    ctx.moveTo(top.x, top.y);
+    ctx.lineTo(right.x, right.y);
+    ctx.lineTo(bottom.x, bottom.y);
+    ctx.lineTo(left.x, left.y);
+    ctx.lineTo(top.x, top.y);
+    ctx.closePath();
+    ctx.fill("nonzero");
+    ctx.stroke();
+  }
+};
+
+// src/renderer/RectangleRenderer.ts
+var RectangleRenderer = class extends ShapeRenderer {
+  render(ctx, shape) {
+    const rect = shape;
+    if (rect.borderRadius == 0) {
+      ctx.strokeStyle = rect.borderColor.hex;
+      ctx.lineWidth = rect.borderWidth;
+      if (rect.backgroundColor) {
+        ctx.fillStyle = rect.backgroundColor.hex;
+        ctx.fillRect(rect.topLeft.x, rect.topLeft.y, rect.width, rect.height);
+      }
+      ctx.strokeRect(rect.topLeft.x, rect.topLeft.y, rect.width, rect.height);
+    } else {
+      ShapeRenderer.renderRoundedRect(
+        ctx,
+        rect.topLeft.x,
+        rect.topLeft.y,
+        rect.width,
+        rect.height,
+        rect.borderRadius,
+        rect.borderWidth,
+        rect.borderColor,
+        rect.backgroundColor
+      );
+    }
+  }
+};
+
 // src/paint/FlatPlayground.ts
 var _FlatPlayground = class _FlatPlayground {
   constructor(ctx, width, height) {
@@ -372,6 +552,7 @@ var _FlatPlayground = class _FlatPlayground {
   }
   render() {
     this._ctx.clearRect(0, 0, this._width, this._height);
+    this.drawBackground();
     const shapes = this._shapes.sort((a, b) => a.depth - a.depth);
     for (let i = 0; i < shapes.length; i++) {
       const shape = shapes[i];
@@ -379,6 +560,10 @@ var _FlatPlayground = class _FlatPlayground {
         _FlatPlayground.CIRCLE_RENDERER.render(this._ctx, shape);
       } else if (shape instanceof Square) {
         _FlatPlayground.SQUARE_RENDERER.render(this._ctx, shape);
+      } else if (shape instanceof Rectangle) {
+        _FlatPlayground.RECTANGLE_RENDERER.render(this._ctx, shape);
+      } else if (shape instanceof Diamond) {
+        _FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
       }
     }
   }
@@ -404,15 +589,89 @@ var _FlatPlayground = class _FlatPlayground {
     this.render();
   }
   shiftShape(shape, mousepos, offset) {
-    if (shape instanceof Circle) {
-      shape.place(new Point(mousepos.x - offset.x, mousepos.y - offset.y));
-    } else {
-      shape.place(new Point(mousepos.x - offset.x, mousepos.y - offset.y));
-    }
+    shape.place(new Point(mousepos.x - offset.x, mousepos.y - offset.y));
     this.render();
+  }
+  drawBackground({
+    dotRadius = 1,
+    spacing = 20,
+    dotColor = "#999",
+    background = "#fff"
+  } = {}) {
+    const ctx = this._ctx;
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, this._width, this._height);
+    const cols = Math.ceil(this._width / spacing);
+    const rows = Math.ceil(this._height / spacing);
+    ctx.fillStyle = dotColor;
+    for (let y = 0; y < rows; ++y) {
+      for (let x = 0; x < cols; ++x) {
+        const cx = x * spacing + spacing / 2;
+        const cy = y * spacing + spacing / 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  drawArrowHead(x, y, angle, size = 15) {
+    this._ctx.save();
+    this._ctx.translate(x, y);
+    this._ctx.rotate(angle);
+    this._ctx.fillStyle = "#2c3e50";
+    this._ctx.beginPath();
+    this._ctx.moveTo(0, 0);
+    this._ctx.lineTo(-size, -size / 2);
+    this._ctx.lineTo(-size, size / 2);
+    this._ctx.closePath();
+    this._ctx.fill();
+    this._ctx.restore();
+  }
+  drawQuadraticCurveWithArrow(startPoint, endPoint, controlOffset = 100) {
+    const midX = (startPoint.x + endPoint.x) / 2;
+    const midY = (startPoint.y + endPoint.y) / 2;
+    const dx = endPoint.x - startPoint.x;
+    const dy = endPoint.y - startPoint.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const controlX = midX - dy / length * controlOffset;
+    const controlY = midY + dx / length * controlOffset;
+    this._ctx.strokeStyle = "#e74c3c";
+    this._ctx.lineWidth = 3;
+    this._ctx.beginPath();
+    this._ctx.moveTo(startPoint.x, startPoint.y);
+    this._ctx.quadraticCurveTo(controlX, controlY, endPoint.x, endPoint.y);
+    this._ctx.stroke();
+    const t = 0.9;
+    const arrowX = (1 - t) * (1 - t) * startPoint.x + 2 * (1 - t) * t * controlX + t * t * endPoint.x;
+    const arrowY = (1 - t) * (1 - t) * startPoint.y + 2 * (1 - t) * t * controlY + t * t * endPoint.y;
+    const tangentX = 2 * (1 - t) * (controlX - startPoint.x) + 2 * t * (endPoint.x - controlX);
+    const tangentY = 2 * (1 - t) * (controlY - startPoint.y) + 2 * t * (endPoint.y - controlY);
+    const angle = Math.atan2(tangentY, tangentX);
+    this.drawArrowHead(arrowX, arrowY, 90);
+  }
+  addConnection(startPoint, endPoint, cp1Offset = 50, cp2Offset = 50) {
+    const cp1x = startPoint.x + cp1Offset;
+    const cp1y = startPoint.y - cp1Offset;
+    const cp2x = endPoint.x - cp2Offset;
+    const cp2y = endPoint.y - cp2Offset;
+    this._ctx.strokeStyle = "#9b59b6";
+    this._ctx.lineWidth = 3;
+    this._ctx.beginPath();
+    this._ctx.moveTo(startPoint.x, startPoint.y);
+    this._ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endPoint.x, endPoint.y);
+    this._ctx.stroke();
+    const tangentX = 3 * (endPoint.x - cp2x);
+    const tangentY = 3 * (endPoint.y - cp2y);
+    const angle = Math.atan2(tangentY, tangentX);
+    this.drawArrowHead(endPoint.x, endPoint.y, 90);
+  }
+  connect(source, target) {
+    const srcPoint = source;
   }
 };
 _FlatPlayground.CIRCLE_RENDERER = new CircleRenderer();
 _FlatPlayground.SQUARE_RENDERER = new SquareRenderer();
+_FlatPlayground.RECTANGLE_RENDERER = new RectangleRenderer();
+_FlatPlayground.DIAMOND_RENDERER = new DiamondRenderer();
 var FlatPlayground = _FlatPlayground;
 //# sourceMappingURL=paint-shapes.js.map

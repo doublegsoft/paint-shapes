@@ -11,6 +11,7 @@
 </html>
 <script src="./paint-shapes.js" type="application/javascript"></script>
 <script>
+
 var scale = window.devicePixelRatio || 1;
 var canvas = document.getElementById('canvas');
 canvas.width = `${500 * scale}`;
@@ -28,8 +29,20 @@ circle.backgroundColor = new Color(255, 128, 56);
 playground.addShape(circle);
 
 var square = new Square(new Point(100, 200), 50);
+square.borderRadius = 10;
 square.backgroundColor = new Color(255, 128, 56);
 playground.addShape(square);
+
+var diamond = new Diamond(new Point(300, 200), 100, 50);
+diamond.backgroundColor = new Color(255, 128, 56);
+playground.addShape(diamond);
+
+var rectangle = new Rectangle(new Point(250, 50), 100, 50);
+rectangle.borderRadius = 10;
+rectangle.backgroundColor = new Color(255, 128, 56);
+playground.addShape(rectangle);
+
+// playground.drawQuadraticCurveWithArrow(new Point(50, 50), new Point(200, 200), 50);
 
 canvas.addEventListener('mousedown', ev => {
   const p = new Point(ev.layerX, ev.layerY);
