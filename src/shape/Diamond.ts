@@ -108,11 +108,11 @@ export class Diamond extends Shape {
 
   getConnectablePoints(): Point[] {
     const ret = new Array<Point>();
-    const topLeft = this._points[0];
-    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y));
-    ret.push(new Point(topLeft.x + this._width, topLeft.y + this._height / 2));
-    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y + this._height));
-    ret.push(new Point(topLeft.x, topLeft.y + this._height / 2));
+    const center = this._points[0];
+    ret.push(new Point(center.x, center.y - this._height / 2));
+    ret.push(new Point(center.x + this._width / 2, center.y));
+    ret.push(new Point(center.x, center.y + this._height / 2));
+    ret.push(new Point(center.x - this._width / 2, center.y));
     return ret;
   }
 }

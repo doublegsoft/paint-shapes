@@ -8,6 +8,8 @@ import {Shape} from "@/shape/Shape";
 import {Circle} from "@/shape/Circle";
 import {Square} from "@/shape/Square";
 import {Diamond} from "@/shape/Diamond";
+import {Rectangle} from "@/shape/Rectangle";
+import {Connection} from "@/shape/Connection";
 import {Point} from "@/common/Point";
 import {Color} from "@/common/Color";
 
@@ -15,7 +17,7 @@ import {CircleRenderer} from "@/renderer/CircleRenderer";
 import {SquareRenderer} from "@/renderer/SquareRenderer";
 import {DiamondRenderer} from "@/renderer/DiamondRenderer";
 import {RectangleRenderer} from "@/renderer/RectangleRenderer";
-import {Rectangle} from "@/shape/Rectangle";
+
 
 export class FlatPlayground {
 
@@ -32,6 +34,8 @@ export class FlatPlayground {
   private _height: number = 0;
 
   private _shapes: Shape[] = [];
+
+  private _connections: Connection[] = [];
 
   private readonly _ctx: CanvasRenderingContext2D;
 
@@ -56,6 +60,10 @@ export class FlatPlayground {
       }else if (shape instanceof Diamond) {
         FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
       }
+    }
+
+    for (let i = 0; i < this._connections.length; i++) {
+      this._connections[i].render(this._ctx);
     }
   }
 
@@ -185,6 +193,11 @@ export class FlatPlayground {
   }
 
   connect(source: Shape, target: Shape): void {
-    const srcPoint = source;
+    const conn = new Connection(source, target);
+    for (let cn of this._connections) {
+      // TODO
+    }
+    this._connections.push(conn);
+    this.render();
   }
 }

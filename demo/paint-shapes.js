@@ -39,6 +39,9 @@ var Point = class {
       return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
   }
+  equals(other) {
+    return this.x === other.x && this.y === other.y;
+  }
 };
 
 // src/common/Color.ts
@@ -396,14 +399,143 @@ var Diamond = class extends Shape {
   }
   getConnectablePoints() {
     const ret = new Array();
-    const topLeft = this._points[0];
-    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y));
-    ret.push(new Point(topLeft.x + this._width, topLeft.y + this._height / 2));
-    ret.push(new Point(topLeft.x + this._width / 2, topLeft.y + this._height));
-    ret.push(new Point(topLeft.x, topLeft.y + this._height / 2));
+    const center = this._points[0];
+    ret.push(new Point(center.x, center.y - this._height / 2));
+    ret.push(new Point(center.x + this._width / 2, center.y));
+    ret.push(new Point(center.x, center.y + this._height / 2));
+    ret.push(new Point(center.x - this._width / 2, center.y));
     return ret;
   }
 };
+
+// src/shape/Connection.ts
+var _Connection = class _Connection {
+  constructor(source, target) {
+    this._label = "";
+    this._source = source;
+    this._target = target;
+  }
+  get source() {
+    return this._source;
+  }
+  get target() {
+    return this._target;
+  }
+  get label() {
+    return this._label;
+  }
+  set label(label) {
+    this._label = label;
+  }
+  render(ctx) {
+    let srcPts = this._source.getConnectablePoints();
+    let tgtPts = this._target.getConnectablePoints();
+    let srcIdx = -1;
+    let tgtIdx = -1;
+    let min = Infinity;
+    let pair = [new Point(0, 0), new Point(0, 0)];
+    for (let i = 0; i < srcPts.length; i++) {
+      for (let j = 0; j < tgtPts.length; j++) {
+        let dist = srcPts[i].distanceTo(tgtPts[j]);
+        if (dist < min) {
+          pair[0] = srcPts[i];
+          pair[1] = tgtPts[j];
+          srcIdx = i;
+          tgtIdx = j;
+          min = dist;
+        }
+      }
+    }
+    const size = 10;
+    let angle = 90;
+    let offsetX = 0;
+    let offsetY = 0;
+    for (let i = 0; i < tgtPts.length; i++) {
+      if (tgtPts[i].equals(pair[1])) {
+        if (i == 0) {
+          angle = 180;
+          offsetY = -size;
+        } else if (i == 1) {
+          angle = 270;
+          offsetX = size;
+        } else if (i == 2) {
+          angle = 0;
+          offsetY = size;
+        } else if (i == 3) {
+          angle = 90;
+          offsetX = -size;
+        }
+        break;
+      }
+    }
+    if (min !== Infinity) {
+      ctx.lineWidth = _Connection.LINE_WIDTH;
+      ctx.strokeStyle = "black";
+      ctx.beginPath();
+      if (srcIdx % 2 == tgtIdx % 2) {
+        const middle = new Point((pair[0].x + pair[1].x) / 2, (pair[0].y + pair[1].y) / 2);
+        if (srcIdx % 2 == 0) {
+          ctx.moveTo(pair[0].x, pair[0].y);
+          ctx.lineTo(pair[0].x, middle.y);
+          ctx.lineTo(pair[1].x + offsetX, middle.y);
+          ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
+        } else {
+          ctx.moveTo(pair[0].x, pair[0].y);
+          ctx.lineTo(middle.x, pair[0].y);
+          ctx.lineTo(middle.x, pair[1].y + offsetY);
+          ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
+        }
+      } else {
+        const corner = new Point(pair[0].x, pair[1].y);
+        ctx.moveTo(pair[0].x, pair[0].y);
+        ctx.lineTo(corner.x, corner.y + offsetY);
+        ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
+      }
+      ctx.stroke();
+      ctx.closePath();
+    }
+    this.renderArrowHead(ctx, pair[1].x, pair[1].y, angle, size);
+  }
+  renderArrowHead(ctx, x, y, angle, size = 15) {
+    ctx.fillStyle = "#2c3e50";
+    const offset = _Connection.LINE_WIDTH / 2;
+    ctx.beginPath();
+    if (angle == 0) {
+      x += offset;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - size / 2, y + size);
+      ctx.lineTo(x + size / 2, y + size);
+      ctx.moveTo(x, y);
+    } else if (angle == 90) {
+      y += offset;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - size, y - size / 2);
+      ctx.lineTo(x - size, y + size / 2);
+      ctx.moveTo(x, y);
+    } else if (angle == 180) {
+      x += offset;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - size / 2, y - size);
+      ctx.lineTo(x + size / 2, y - size);
+      ctx.moveTo(x, y);
+    } else if (angle == 270) {
+      y += offset;
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + size, y - size / 2);
+      ctx.lineTo(x + size, y + size / 2);
+      ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+    ctx.closePath();
+    ctx.fill();
+  }
+  renderCornerLine(ctx, source, target, offsetX, offsetY) {
+  }
+  renderDirectLine(ctx, source, target, offsetX, offsetY) {
+  }
+};
+_Connection.LINE_WIDTH = 2;
+var Connection = _Connection;
 
 // src/renderer/ShapeRenderer.ts
 var ShapeRenderer = class {
@@ -412,6 +544,11 @@ var ShapeRenderer = class {
    * Works in all browsers that support CanvasRenderingContext2D.
    */
   static renderRoundedRect(ctx, x, y, width, height, borderRadius, borderWidth, borderColor, backgroundColor) {
+    if (backgroundColor) {
+      ctx.fillStyle = backgroundColor.hex;
+    }
+    ctx.strokeStyle = borderColor.hex;
+    ctx.lineWidth = borderWidth;
     ctx.beginPath();
     ctx.moveTo(x + borderRadius, y);
     ctx.lineTo(x + width - borderRadius, y);
@@ -423,11 +560,6 @@ var ShapeRenderer = class {
     ctx.lineTo(x, y + borderRadius);
     ctx.quadraticCurveTo(x, y, x + borderRadius, y);
     ctx.closePath();
-    if (backgroundColor) {
-      ctx.fillStyle = backgroundColor.hex;
-    }
-    ctx.strokeStyle = borderColor.hex;
-    ctx.lineWidth = borderWidth;
     if (backgroundColor) {
       ctx.fill();
     }
@@ -546,6 +678,7 @@ var _FlatPlayground = class _FlatPlayground {
     this._width = 0;
     this._height = 0;
     this._shapes = [];
+    this._connections = [];
     this._ctx = ctx;
     this._width = width;
     this._height = height;
@@ -565,6 +698,9 @@ var _FlatPlayground = class _FlatPlayground {
       } else if (shape instanceof Diamond) {
         _FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
       }
+    }
+    for (let i = 0; i < this._connections.length; i++) {
+      this._connections[i].render(this._ctx);
     }
   }
   select(x, y) {
@@ -666,7 +802,11 @@ var _FlatPlayground = class _FlatPlayground {
     this.drawArrowHead(endPoint.x, endPoint.y, 90);
   }
   connect(source, target) {
-    const srcPoint = source;
+    const conn = new Connection(source, target);
+    for (let cn of this._connections) {
+    }
+    this._connections.push(conn);
+    this.render();
   }
 };
 _FlatPlayground.CIRCLE_RENDERER = new CircleRenderer();

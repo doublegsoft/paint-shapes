@@ -24,6 +24,13 @@ export abstract class ShapeRenderer {
                            borderWidth: number,
                            borderColor: Color,
                            backgroundColor: Color) {
+    if (backgroundColor) {
+      ctx.fillStyle = backgroundColor.hex;
+    }
+
+    ctx.strokeStyle = borderColor.hex;
+    ctx.lineWidth = borderWidth;
+
     ctx.beginPath();
     ctx.moveTo(x + borderRadius, y);
     ctx.lineTo(x + width - borderRadius, y);
@@ -35,12 +42,6 @@ export abstract class ShapeRenderer {
     ctx.lineTo(x, y + borderRadius);
     ctx.quadraticCurveTo(x, y, x + borderRadius, y);
     ctx.closePath();
-
-    if (backgroundColor) {
-      ctx.fillStyle = backgroundColor.hex;
-    }
-    ctx.strokeStyle = borderColor.hex;
-    ctx.lineWidth = borderWidth;
 
     if (backgroundColor) {
       ctx.fill();
