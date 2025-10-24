@@ -412,6 +412,7 @@ var Diamond = class extends Shape {
 var _Connection = class _Connection {
   constructor(source, target) {
     this._label = "";
+    this._color = "black";
     this._source = source;
     this._target = target;
   }
@@ -426,6 +427,12 @@ var _Connection = class _Connection {
   }
   set label(label) {
     this._label = label;
+  }
+  get color() {
+    return this._color;
+  }
+  set color(color) {
+    this._color = color;
   }
   render(ctx) {
     let srcPts = this._source.getConnectablePoints();
@@ -470,7 +477,7 @@ var _Connection = class _Connection {
     }
     if (min !== Infinity) {
       ctx.lineWidth = _Connection.LINE_WIDTH;
-      ctx.strokeStyle = "black";
+      ctx.strokeStyle = this._color;
       ctx.beginPath();
       if (srcIdx % 2 == tgtIdx % 2) {
         const middle = new Point((pair[0].x + pair[1].x) / 2, (pair[0].y + pair[1].y) / 2);
@@ -485,8 +492,13 @@ var _Connection = class _Connection {
           ctx.lineTo(middle.x, pair[1].y + offsetY);
           ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
         }
-      } else {
+      } else if (srcIdx % 2 == 0 && tgtIdx % 2 == 1) {
         const corner = new Point(pair[0].x, pair[1].y);
+        ctx.moveTo(pair[0].x, pair[0].y);
+        ctx.lineTo(corner.x, corner.y + offsetY);
+        ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
+      } else if (srcIdx % 2 == 1 && tgtIdx % 2 == 0) {
+        const corner = new Point(pair[1].x, pair[0].y - offsetY);
         ctx.moveTo(pair[0].x, pair[0].y);
         ctx.lineTo(corner.x, corner.y + offsetY);
         ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
