@@ -26,6 +26,15 @@ export class RectangleRenderer extends ShapeRenderer {
         rect.borderRadius, rect.borderWidth, rect.borderColor,
         rect.backgroundColor);
     }
+    if (shape.text != '') {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(shape.text,
+        rect.topLeft.x + (rect.width - width) / 2,
+        rect.topLeft.y + (rect.height + height) / 2);
+    }
   }
 
 }

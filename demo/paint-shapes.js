@@ -92,6 +92,7 @@ var Shape = class {
     this._backgroundColor = Color.transparent;
     this._borderColor = Color.transparent;
     this._borderWidth = 0;
+    this._text = "";
     if (points.length == 0) {
       throw new Error("A shape must have at least one point.");
     }
@@ -126,6 +127,12 @@ var Shape = class {
   }
   get borderRadius() {
     return this._borderRadius;
+  }
+  set text(value) {
+    this._text = value;
+  }
+  get text() {
+    return this._text;
   }
   /**
    * if in 2d context, depth means draw order for shapes.
@@ -679,6 +686,17 @@ var RectangleRenderer = class extends ShapeRenderer {
         rect.borderWidth,
         rect.borderColor,
         rect.backgroundColor
+      );
+    }
+    if (shape.text != "") {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(
+        shape.text,
+        rect.topLeft.x + (rect.width - width) / 2,
+        rect.topLeft.y + (rect.height + height) / 2
       );
     }
   }

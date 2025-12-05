@@ -31,6 +31,8 @@ export abstract class Shape {
 
   private _borderWidth: number = 0;
 
+  private _text: string = '';
+
   /**
    * Ordered list of points that define the shape’s outline.
    *
@@ -89,6 +91,14 @@ export abstract class Shape {
 
   get borderRadius() {
     return this._borderRadius;
+  }
+
+  set text(value: string) {
+    this._text = value;
+  }
+
+  get text(): string {
+    return this._text;
   }
 
   /**
