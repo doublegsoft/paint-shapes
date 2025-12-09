@@ -27,6 +27,16 @@ export class SquareRenderer extends ShapeRenderer {
         square.borderRadius, square.borderWidth, square.borderColor,
         square.backgroundColor);
     }
+
+    if (shape.text != '') {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(shape.text,
+        square.topLeft.x + (square.width - width) / 2,
+        square.topLeft.y + (square.height + height) / 2);
+    }
   }
 
 }

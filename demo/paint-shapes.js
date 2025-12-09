@@ -607,6 +607,18 @@ var CircleRenderer = class extends ShapeRenderer {
         ctx.stroke();
       }
     }
+    if (shape.text != "") {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const center = circle.center;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(
+        shape.text,
+        center.x - width / 2,
+        center.y + height / 2
+      );
+    }
   }
 };
 
@@ -635,6 +647,17 @@ var SquareRenderer = class extends ShapeRenderer {
         square.backgroundColor
       );
     }
+    if (shape.text != "") {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(
+        shape.text,
+        square.topLeft.x + (square.width - width) / 2,
+        square.topLeft.y + (square.height + height) / 2
+      );
+    }
   }
 };
 
@@ -660,6 +683,17 @@ var DiamondRenderer = class extends ShapeRenderer {
     ctx.closePath();
     ctx.fill("nonzero");
     ctx.stroke();
+    if (shape.text != "") {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(
+        shape.text,
+        left.x + (diamond.width - width) / 2,
+        top.y + (diamond.height + height) / 2
+      );
+    }
   }
 };
 

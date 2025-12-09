@@ -31,6 +31,17 @@ export class CircleRenderer extends ShapeRenderer {
         ctx.stroke();
       }
     }
+
+    if (shape.text != '') {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const center = circle.center;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(shape.text,
+        center.x - width / 2,
+        center.y + height / 2);
+    }
   }
 
 }

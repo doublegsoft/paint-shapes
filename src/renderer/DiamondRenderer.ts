@@ -34,6 +34,16 @@ export class DiamondRenderer extends ShapeRenderer {
 
     ctx.fill('nonzero');
     ctx.stroke();
+
+    if (shape.text != '') {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const metrics = ctx.measureText(shape.text);
+      const width = metrics.width;
+      const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      ctx.fillText(shape.text,
+        left.x + (diamond.width - width) / 2,
+        top.y + (diamond.height + height) / 2);
+    }
   }
 
 }
