@@ -7,6 +7,7 @@
 </head>
 <body>
 <canvas id="canvas" style="width: 500px; height: 300px;"></canvas>
+<button id="buttonSave">保存</button>
 </body>
 </html>
 <script src="./paint-shapes.js" type="application/javascript"></script>
@@ -25,12 +26,14 @@ var isDragging = false;
 var playground = new FlatPlayground(ctx, 500 * scale, 300 * scale);
 
 var circle = new Circle(new Point(100, 100), 25);
+circle.id = 'circle';
 circle.text = '开始';
 circle.backgroundColor = new Color(255, 128, 56);
 circle.foregroundColor = new Color(255, 255, 255);
 playground.addShape(circle);
 
 var square = new Square(new Point(100, 200), 50);
+square.id = 'square';
 square.text = '远程调用';
 square.borderRadius = 10;
 square.backgroundColor = new Color(255, 128, 56);
@@ -38,12 +41,14 @@ square.foregroundColor = new Color(255, 255, 255);
 playground.addShape(square);
 
 var diamond = new Diamond(new Point(300, 200), 100, 50);
+diamond.id = 'diamond';
 diamond.text = 'Are you OK?';
 diamond.backgroundColor = new Color(255, 128, 56);
 diamond.foregroundColor = new Color(255, 255, 255);
 playground.addShape(diamond);
 
 var rectangle = new Rectangle(new Point(250, 50), 100, 50);
+rectangle.id = 'rectangle';
 rectangle.text = 'This is a rectangle!';
 rectangle.borderRadius = 10;
 rectangle.backgroundColor = new Color(255, 128, 56);
@@ -77,4 +82,14 @@ canvas.addEventListener('mousemove', ev => {
   const p = new Point(ev.layerX, ev.layerY);
   playground.shiftShape(selectedShape, p, selectedOffset);
 })
+
+var buttonSave = document.getElementById('buttonSave');
+buttonSave.addEventListener('click', ev => {
+  for (let shape of playground.getShapes()) {
+    console.log(shape);
+  }
+  for (let conn of playground.getConnections()) {
+    console.log(conn);
+  }
+});
 </script>

@@ -200,4 +200,12 @@ export class FlatPlayground {
     this._connections.push(conn);
     this.render();
   }
+
+  getShapes(): Shape[]   {
+    return this._shapes;
+  }
+
+  getConnections(): Connection[] {
+    return this._connections;
+  }
 }

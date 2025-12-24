@@ -87,6 +87,7 @@ var Shape = class {
    *               Must contain at least two points (otherwise the shape is degenerate).
    */
   constructor(points) {
+    this._id = "";
     this._borderRadius = 0;
     this._foregroundColor = Color.black;
     this._backgroundColor = Color.transparent;
@@ -133,6 +134,12 @@ var Shape = class {
   }
   get text() {
     return this._text;
+  }
+  set id(value) {
+    this._id = value;
+  }
+  get id() {
+    return this._id;
   }
   /**
    * if in 2d context, depth means draw order for shapes.
@@ -182,6 +189,14 @@ var Shape = class {
   }
   place(point) {
     this._points[0] = point;
+  }
+  equals(shape) {
+    let typeOfThis = typeof this;
+    let typeOfShape = typeof shape;
+    if (typeOfThis !== typeOfShape) {
+      return false;
+    }
+    return this._id === shape.id;
   }
 };
 
@@ -871,6 +886,12 @@ var _FlatPlayground = class _FlatPlayground {
     }
     this._connections.push(conn);
     this.render();
+  }
+  getShapes() {
+    return this._shapes;
+  }
+  getConnections() {
+    return this._connections;
   }
 };
 _FlatPlayground.CIRCLE_RENDERER = new CircleRenderer();

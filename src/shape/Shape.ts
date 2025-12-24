@@ -21,6 +21,8 @@ import {Color} from "../common/Color";
  */
 export abstract class Shape {
 
+  private _id: string = '';
+
   private _borderRadius: number = 0;
 
   private _foregroundColor: Color = Color.black;
@@ -101,6 +103,14 @@ export abstract class Shape {
     return this._text;
   }
 
+  set id(value: string) {
+    this._id = value;
+  }
+
+  get id(): string {
+    return this._id;
+  }
+
   /**
    * if in 2d context, depth means draw order for shapes.
    */
@@ -169,4 +179,13 @@ export abstract class Shape {
    * right-middle, bottom-middle, bottom-middle points.
    */
   abstract getConnectablePoints(): Point[];
+
+  equals(shape: Shape) {
+    let typeOfThis: string = typeof this;
+    let typeOfShape: string = typeof shape;
+    if (typeOfThis !== typeOfShape) {
+      return false;
+    }
+    return this._id === shape.id;
+  }
 }
