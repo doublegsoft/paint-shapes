@@ -79,9 +79,14 @@ canvas.addEventListener('mousemove', ev => {
   if (!isDragging || selectedShape == null) {
     return;
   }
+  ev.stopPropagation();
   const p = new Point(ev.layerX, ev.layerY);
   playground.shiftShape(selectedShape, p, selectedOffset);
-})
+});
+
+document.body.addEventListener('mousemove', ev => {
+  isDragging = false;
+});
 
 var buttonSave = document.getElementById('buttonSave');
 buttonSave.addEventListener('click', ev => {
