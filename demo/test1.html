@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-<canvas id="canvas" style="width: 500px; height: 300px;"></canvas>
+<canvas id="canvas" style="width: 800px; height: 600px;"></canvas>
 <button id="buttonSave">保存</button>
 </body>
 </html>
@@ -15,20 +15,22 @@
 
 var scale = window.devicePixelRatio || 1;
 var canvas = document.getElementById('canvas');
-canvas.width = `${500 * scale}`;
-canvas.height = `${300 * scale}`;
+canvas.width = `${800 * scale}`;
+canvas.height = `${600 * scale}`;
 var ctx = canvas.getContext("2d");
 ctx.scale(scale, scale);
 
 var selectedShape = null;
 var selectedOffset = null;
 var isDragging = false;
-var playground = new FlatPlayground(ctx, 500 * scale, 300 * scale);
+var playground = new FlatPlayground(ctx, 800 * scale, 600 * scale);
 
 var circle = new Circle(new Point(100, 100), 25);
 circle.id = 'circle';
 circle.text = '开始';
-circle.backgroundColor = new Color(255, 128, 56);
+circle.backgroundColor = Color.from('#fb718566');
+circle.borderColor = Color.from('#fb7185');
+circle.borderWidth = 2;
 circle.foregroundColor = new Color(255, 255, 255);
 playground.addShape(circle);
 
@@ -36,14 +38,18 @@ var square = new Square(new Point(100, 200), 50);
 square.id = 'square';
 square.text = '远程调用';
 square.borderRadius = 10;
-square.backgroundColor = new Color(255, 128, 56);
+square.backgroundColor = Color.from('#22d3ee66');
+square.borderColor = Color.from('#22d3ee');
+square.borderWidth = 2;
 square.foregroundColor = new Color(255, 255, 255);
 playground.addShape(square);
 
 var diamond = new Diamond(new Point(300, 200), 100, 50);
 diamond.id = 'diamond';
 diamond.text = 'Are you OK?';
-diamond.backgroundColor = new Color(255, 128, 56);
+diamond.backgroundColor = Color.from('#34d39966');
+diamond.borderColor = Color.from('#34d399');
+diamond.borderWidth = 2;
 diamond.foregroundColor = new Color(255, 255, 255);
 playground.addShape(diamond);
 
@@ -51,7 +57,9 @@ var rectangle = new Rectangle(new Point(250, 50), 100, 50);
 rectangle.id = 'rectangle';
 rectangle.text = 'This is a rectangle!';
 rectangle.borderRadius = 10;
-rectangle.backgroundColor = new Color(255, 128, 56);
+rectangle.backgroundColor = Color.from('#a78bfa66');
+rectangle.borderColor = Color.from('#a78bfa');
+rectangle.borderWidth = 2;
 rectangle.foregroundColor = new Color(255, 255, 255);
 playground.addShape(rectangle);
 

@@ -63,6 +63,7 @@ export class FlatPlayground {
     }
 
     for (let i = 0; i < this._connections.length; i++) {
+      this._connections[i].color = '#888';
       this._connections[i].render(this._ctx);
     }
   }
@@ -71,13 +72,13 @@ export class FlatPlayground {
     let retVal:Shape | null = null;
     const p: Point = new Point(x, y);
     for (let i = 0; i < this._shapes.length; i++) {
-      this._shapes[i].borderWidth = 0;
-      this._shapes[i].borderColor = Color.transparent;
+      // this._shapes[i].borderWidth = 0;
+      // this._shapes[i].borderColor = Color.transparent;
     }
     for (let i = 0; i < this._shapes.length; i++) {
       if (this._shapes[i].contains(p)) {
-        this._shapes[i].borderWidth = 2;
-        this._shapes[i].borderColor = new Color(122, 36, 188);
+        // this._shapes[i].borderWidth = 2;
+        // this._shapes[i].borderColor = new Color(122, 36, 188);
         retVal = this._shapes[i];
       }
     }
@@ -98,8 +99,8 @@ export class FlatPlayground {
   drawBackground({
     dotRadius = 1,
     spacing = 20,
-    dotColor = '#999',
-    background = '#fff'
+    dotColor = '#666',
+    background = '#0b1220'
   } = {}) {
     const ctx = this._ctx;
     ctx.fillStyle = background;
@@ -126,7 +127,7 @@ export class FlatPlayground {
     this._ctx.translate(x, y);
     this._ctx.rotate(angle);
 
-    this._ctx.fillStyle = '#2c3e50';
+    this._ctx.fillStyle = 'red';
     this._ctx.beginPath();
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(-size, -size/2);

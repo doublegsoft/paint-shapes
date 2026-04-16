@@ -130,7 +130,7 @@ export class Connection {
   }
 
   renderArrowHead(ctx: CanvasRenderingContext2D, x: number, y: number, angle: number, size = 15) {
-    ctx.fillStyle = '#2c3e50';
+    ctx.fillStyle = this._color;
     const offset = Connection.LINE_WIDTH / 2;
     ctx.beginPath();
     if (angle == 0) {

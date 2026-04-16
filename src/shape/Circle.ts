@@ -6,6 +6,7 @@
 */
 import {Point} from "@/common/Point";
 import {Shape} from "./Shape";
+import {Color} from "@/common/Color";
 
 /**
  * A simple, immutable Circle.

@@ -15,7 +15,6 @@ export class CircleRenderer extends ShapeRenderer {
     ctx.beginPath();
     ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, Math.PI * 2);
     ctx.closePath();
-
     if (circle.backgroundColor) {
       ctx.fillStyle = circle.backgroundColor.hex;
       ctx.fill();

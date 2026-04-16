@@ -27,7 +27,6 @@ export abstract class ShapeRenderer {
     if (backgroundColor) {
       ctx.fillStyle = backgroundColor.hex;
     }
-
     ctx.strokeStyle = borderColor.hex;
     ctx.lineWidth = borderWidth;
 

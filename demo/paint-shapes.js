@@ -54,7 +54,7 @@ var _Color = class _Color {
     this._red = red;
     this._green = green;
     this._blue = blue;
-    this._alpha = alpha || 0;
+    this._alpha = alpha || -1;
   }
   set red(value) {
     this._red = value;
@@ -72,7 +72,35 @@ var _Color = class _Color {
     const r = Math.max(0, Math.min(255, this._red));
     const g = Math.max(0, Math.min(255, this._green));
     const b = Math.max(0, Math.min(255, this._blue));
-    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    if (this._alpha === -1) {
+      return "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+    }
+    const a = Math.round(
+      Math.max(0, Math.min(1, this._alpha)) * 255
+    );
+    return "#" + [r, g, b, a].map((v) => v.toString(16).padStart(2, "0")).join("");
+  }
+  static from(hex) {
+    if (!hex) {
+      throw new Error("Invalid hex color");
+    }
+    let clean = hex.replace("#", "").trim();
+    if (clean.length === 3) {
+      clean = clean.split("").map((c) => c + c).join("");
+    }
+    if (clean.length !== 6 && clean.length !== 8) {
+      throw new Error("Invalid hex format");
+    }
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    if (clean.length === 8) {
+      const alphaHex = clean.substring(6, 8);
+      let a = parseInt(alphaHex, 16) / 255;
+      return new _Color(r, g, b, a);
+    } else {
+      return new _Color(r, g, b);
+    }
   }
 };
 _Color.transparent = new _Color(255, 255, 255, 1);
@@ -531,7 +559,7 @@ var _Connection = class _Connection {
     this.renderArrowHead(ctx, pair[1].x, pair[1].y, angle, size);
   }
   renderArrowHead(ctx, x, y, angle, size = 15) {
-    ctx.fillStyle = "#2c3e50";
+    ctx.fillStyle = this._color;
     const offset = _Connection.LINE_WIDTH / 2;
     ctx.beginPath();
     if (angle == 0) {
@@ -779,6 +807,7 @@ var _FlatPlayground = class _FlatPlayground {
       }
     }
     for (let i = 0; i < this._connections.length; i++) {
+      this._connections[i].color = "#888";
       this._connections[i].render(this._ctx);
     }
   }
@@ -786,13 +815,9 @@ var _FlatPlayground = class _FlatPlayground {
     let retVal = null;
     const p = new Point(x, y);
     for (let i = 0; i < this._shapes.length; i++) {
-      this._shapes[i].borderWidth = 0;
-      this._shapes[i].borderColor = Color.transparent;
     }
     for (let i = 0; i < this._shapes.length; i++) {
       if (this._shapes[i].contains(p)) {
-        this._shapes[i].borderWidth = 2;
-        this._shapes[i].borderColor = new Color(122, 36, 188);
         retVal = this._shapes[i];
       }
     }
@@ -810,8 +835,8 @@ var _FlatPlayground = class _FlatPlayground {
   drawBackground({
     dotRadius = 1,
     spacing = 20,
-    dotColor = "#999",
-    background = "#fff"
+    dotColor = "#666",
+    background = "#0b1220"
   } = {}) {
     const ctx = this._ctx;
     ctx.fillStyle = background;
@@ -833,7 +858,7 @@ var _FlatPlayground = class _FlatPlayground {
     this._ctx.save();
     this._ctx.translate(x, y);
     this._ctx.rotate(angle);
-    this._ctx.fillStyle = "#2c3e50";
+    this._ctx.fillStyle = "red";
     this._ctx.beginPath();
     this._ctx.moveTo(0, 0);
     this._ctx.lineTo(-size, -size / 2);
