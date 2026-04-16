@@ -25,7 +25,7 @@ var selectedOffset = null;
 var isDragging = false;
 var playground = new FlatPlayground(ctx, 800 * scale, 600 * scale);
 
-var circle = new Circle(new Point(100, 100), 25);
+var circle = new Circle(new Point(125, 100), 25);
 circle.id = 'circle';
 circle.text = '开始';
 circle.backgroundColor = Color.from('#fb718566');
@@ -44,7 +44,7 @@ square.borderWidth = 2;
 square.foregroundColor = new Color(255, 255, 255);
 playground.addShape(square);
 
-var diamond = new Diamond(new Point(300, 200), 100, 50);
+var diamond = new Diamond(new Point(300, 225), 100, 50);
 diamond.id = 'diamond';
 diamond.text = 'Are you OK?';
 diamond.backgroundColor = Color.from('#34d39966');
@@ -63,9 +63,20 @@ rectangle.borderWidth = 2;
 rectangle.foregroundColor = new Color(255, 255, 255);
 playground.addShape(rectangle);
 
+var rect1 = new Rectangle(new Point(450, 200), 100, 50);
+rect1.id = 'rect1';
+rect1.text = 'This is rect!';
+rect1.borderRadius = 10;
+rect1.backgroundColor = Color.from('#f9731666');
+rect1.borderColor = Color.from('#f97316');
+rect1.borderWidth = 2;
+rect1.foregroundColor = new Color(255, 255, 255);
+playground.addShape(rect1);
+
+playground.connect(diamond, rect1);
 playground.connect(diamond, rectangle);
 playground.connect(circle, square);
-playground.connect(square, rectangle);
+playground.connect(square, diamond);
 
 // playground.drawQuadraticCurveWithArrow(new Point(50, 50), new Point(200, 200), 50);
 
