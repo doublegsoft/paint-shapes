@@ -25,14 +25,14 @@ var selectedOffset = null;
 var isDragging = false;
 var playground = new FlatPlayground(ctx, 800 * scale, 600 * scale);
 
-var circle = new Circle(new Point(125, 100), 25);
-circle.id = 'circle';
-circle.text = '开始';
-circle.backgroundColor = Color.from('#fb718566');
-circle.borderColor = Color.from('#fb7185');
-circle.borderWidth = 2;
-circle.foregroundColor = new Color(255, 255, 255);
-playground.addShape(circle);
+var start = new Circle(new Point(125, 100), 25);
+start.id = 'circle';
+start.text = '开始';
+start.backgroundColor = Color.from('#fb718566');
+start.borderColor = Color.from('#fb7185');
+start.borderWidth = 2;
+start.foregroundColor = new Color(255, 255, 255);
+playground.addShape(start);
 
 var square = new Square(new Point(100, 200), 50);
 square.id = 'square';
@@ -53,7 +53,7 @@ diamond.borderWidth = 2;
 diamond.foregroundColor = new Color(255, 255, 255);
 playground.addShape(diamond);
 
-var rectangle = new Rectangle(new Point(250, 50), 100, 50);
+var rectangle = new Rectangle(new Point(250, 350), 100, 50);
 rectangle.id = 'rectangle';
 rectangle.text = 'This is a rectangle!';
 rectangle.borderRadius = 10;
@@ -73,10 +73,21 @@ rect1.borderWidth = 2;
 rect1.foregroundColor = new Color(255, 255, 255);
 playground.addShape(rect1);
 
+var end = new Circle(new Point(500, 375), 25);
+end.id = 'circle';
+end.text = '结束';
+end.backgroundColor = Color.from('#fb718566');
+end.borderColor = Color.from('#fb7185');
+end.borderWidth = 2;
+end.foregroundColor = new Color(255, 255, 255);
+playground.addShape(end);
+
+playground.connect(start, square);
+playground.connect(square, diamond);
 playground.connect(diamond, rect1);
 playground.connect(diamond, rectangle);
-playground.connect(circle, square);
-playground.connect(square, diamond);
+playground.connect(rect1, end);
+playground.connect(rectangle, end);
 
 // playground.drawQuadraticCurveWithArrow(new Point(50, 50), new Point(200, 200), 50);
 

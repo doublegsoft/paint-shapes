@@ -99,7 +99,7 @@ export class FlatPlayground {
   drawBackground({
     dotRadius = 1,
     spacing = 20,
-    dotColor = '#666',
+    dotColor = '#333',
     background = '#0b1220'
   } = {}) {
     const ctx = this._ctx;
