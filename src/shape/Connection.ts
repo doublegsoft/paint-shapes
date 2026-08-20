@@ -14,6 +14,8 @@ export class Connection {
 
   public static LINE_WIDTH: number = 2;
 
+  public static BEAM_COLOR: string = '#67e8f9';
+
   private readonly _source: Shape;
 
   private readonly _target: Shape;
@@ -21,6 +23,8 @@ export class Connection {
   private _label: string = '';
 
   private _color: string = 'black';
+
+  private _beam: boolean = false;
 
   constructor(source: Shape, target: Shape) {
     this._source = source;
@@ -51,7 +55,15 @@ export class Connection {
     this._color = color;
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
+  get beam() {
+    return this._beam;
+  }
+
+  set beam(beam: boolean) {
+    this._beam = beam;
+  }
+
+  render(ctx: CanvasRenderingContext2D, dashOffset: number = 0): void {
     let srcPts: Point[] = this._source.getConnectablePoints();
     let tgtPts: Point[] = this._target.getConnectablePoints();
     let srcIdx: number = -1;
@@ -94,9 +106,6 @@ export class Connection {
       }
     }
     if (min !== Infinity) {
-      ctx.lineWidth = Connection.LINE_WIDTH;
-      ctx.strokeStyle = this._color;
-
       // z注意此处的技巧
       ctx.beginPath();
       if ((srcIdx % 2) == (tgtIdx % 2)) {
@@ -123,8 +132,24 @@ export class Connection {
         ctx.lineTo(corner.x, corner.y + offsetY);
         ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
       }
+
+      // 基础连线
+      ctx.lineWidth = Connection.LINE_WIDTH;
+      ctx.strokeStyle = this._color;
       ctx.stroke();
-      ctx.closePath();
+
+      // 光束效果：在基础连线上叠加一层流动的虚线
+      if (this._beam) {
+        ctx.save();
+        ctx.lineWidth = Connection.LINE_WIDTH;
+        ctx.strokeStyle = Connection.BEAM_COLOR;
+        ctx.shadowColor = Connection.BEAM_COLOR;
+        ctx.shadowBlur = 10;
+        ctx.setLineDash([10, 14]);
+        ctx.lineDashOffset = -dashOffset;
+        ctx.stroke();
+        ctx.restore();
+      }
     }
     this.renderArrowHead(ctx, pair[1].x, pair[1].y, angle, size);
   }

@@ -209,6 +209,20 @@ var Shape = class {
     }
   }
   /**
+   * Moves every point of the shape by the given delta (dx, dy).
+   *
+   * Used by {@link Group} to translate its children together. For shapes that
+   * keep a center (e.g. Circle, Diamond) the first point is the same object as
+   * that center, so shifting it also updates the center automatically.
+   */
+  move(dx, dy) {
+    for (let i = 0; i < this._points.length; i++) {
+      const p = this._points[i];
+      p.x += dx;
+      p.y += dy;
+    }
+  }
+  /**
    * Gets offset relative to the top-left point according to the given point.
    */
   offset(point) {
@@ -458,11 +472,263 @@ var Diamond = class extends Shape {
   }
 };
 
+// src/shape/Cloud.ts
+var Cloud = class extends Shape {
+  constructor(center, width, height) {
+    if (width <= 0 || height <= 0) {
+      throw new Error("Width and height must be greater than 0.");
+    }
+    super([center]);
+    this._center = center;
+    this._width = width;
+    this._height = height;
+  }
+  get center() {
+    return this._center;
+  }
+  set center(point) {
+    this._center = point;
+    this._points[0] = point;
+  }
+  get width() {
+    return this._width;
+  }
+  set width(value) {
+    this._width = value;
+  }
+  get height() {
+    return this._height;
+  }
+  set height(value) {
+    this._height = value;
+  }
+  /** Radius of each lobe (half the height). */
+  get lobeRadius() {
+    return this._height / 2;
+  }
+  /** Number of round lobes across the top. */
+  get lobeCount() {
+    return Math.max(3, Math.ceil(this._width / this._height));
+  }
+  /** Horizontal distance between adjacent lobe centers. */
+  get lobeSpacing() {
+    return Math.max(0, (this._width - this._height) / (this.lobeCount - 1));
+  }
+  /** X coordinate of the i-th lobe center. */
+  lobeCenterX(i) {
+    const left = this._center.x - this._width / 2;
+    return left + this.lobeRadius + i * this.lobeSpacing;
+  }
+  place(point) {
+    this.center = point;
+  }
+  offset(point) {
+    return new Point(point.x - this._center.x, point.y - this._center.y);
+  }
+  contains(point) {
+    const left = this._center.x - this._width / 2;
+    const right = this._center.x + this._width / 2;
+    const top = this._center.y - this._height / 2;
+    const bottom = this._center.y + this._height / 2;
+    if (point.x < left || point.x > right || point.y < top || point.y > bottom) {
+      return false;
+    }
+    const R = this.lobeRadius;
+    const d = this.lobeSpacing;
+    const yoff = Math.sqrt(Math.max(0, R * R - d / 2 * (d / 2)));
+    const cy = this._center.y;
+    for (let i = 0; i < this.lobeCount; i++) {
+      const dx = point.x - this.lobeCenterX(i);
+      const dy = point.y - cy;
+      if (dx * dx + dy * dy <= R * R) {
+        return true;
+      }
+    }
+    const fillLeft = left + R;
+    const fillRight = right - R;
+    return point.y >= cy + yoff && point.x >= fillLeft && point.x <= fillRight;
+  }
+  getConnectablePoints() {
+    const ret = new Array();
+    const c = this._center;
+    ret.push(new Point(c.x, c.y - this._height / 2));
+    ret.push(new Point(c.x + this._width / 2, c.y));
+    ret.push(new Point(c.x, c.y + this._height / 2));
+    ret.push(new Point(c.x - this._width / 2, c.y));
+    return ret;
+  }
+};
+
+// src/shape/Cylinder.ts
+var Cylinder = class extends Shape {
+  constructor(center, width, height) {
+    if (width <= 0 || height <= 0) {
+      throw new Error("Width and height must be greater than 0.");
+    }
+    super([center]);
+    this._center = center;
+    this._width = width;
+    this._height = height;
+  }
+  get center() {
+    return this._center;
+  }
+  set center(point) {
+    this._center = point;
+    this._points[0] = point;
+  }
+  get width() {
+    return this._width;
+  }
+  set width(value) {
+    this._width = value;
+  }
+  get height() {
+    return this._height;
+  }
+  set height(value) {
+    this._height = value;
+  }
+  /** Vertical radius of the elliptical caps. */
+  get capRadius() {
+    return Math.min(this._width * 0.18, this._height * 0.28);
+  }
+  place(point) {
+    this.center = point;
+  }
+  offset(point) {
+    return new Point(point.x - this._center.x, point.y - this._center.y);
+  }
+  contains(point) {
+    const cx = this._center.x;
+    const cy = this._center.y;
+    const left = cx - this._width / 2;
+    const right = cx + this._width / 2;
+    const top = cy - this._height / 2;
+    const bottom = cy + this._height / 2;
+    if (point.x < left || point.x > right || point.y < top || point.y > bottom) {
+      return false;
+    }
+    const rx = this._width / 2;
+    const ry = this.capRadius;
+    if (point.y >= top + ry && point.y <= bottom - ry) {
+      return true;
+    }
+    const capY = point.y < cy ? top + ry : bottom - ry;
+    const nx = (point.x - cx) / rx;
+    const ny = (point.y - capY) / ry;
+    return nx * nx + ny * ny <= 1;
+  }
+  getConnectablePoints() {
+    const ret = new Array();
+    const c = this._center;
+    ret.push(new Point(c.x, c.y - this._height / 2));
+    ret.push(new Point(c.x + this._width / 2, c.y));
+    ret.push(new Point(c.x, c.y + this._height / 2));
+    ret.push(new Point(c.x - this._width / 2, c.y));
+    return ret;
+  }
+};
+
+// src/shape/Group.ts
+var Group = class extends Shape {
+  constructor(shapes = []) {
+    super([new Point(0, 0)]);
+    this._shapes = [];
+    this._width = 0;
+    this._height = 0;
+    this._padding = 20;
+    this._title = "";
+    this._shapes = [...shapes];
+    this.recalculate();
+  }
+  get shapes() {
+    return this._shapes;
+  }
+  get topLeft() {
+    return this._points[0];
+  }
+  get width() {
+    return this._width;
+  }
+  get height() {
+    return this._height;
+  }
+  get padding() {
+    return this._padding;
+  }
+  set padding(value) {
+    this._padding = value;
+  }
+  get title() {
+    return this._title;
+  }
+  set title(value) {
+    this._title = value;
+  }
+  add(shape) {
+    this._shapes.push(shape);
+    this.recalculate();
+  }
+  contains(point) {
+    return this._shapes.some((shape) => shape.contains(point));
+  }
+  getConnectablePoints() {
+    const topLeft = this._points[0];
+    return [
+      new Point(topLeft.x + this._width / 2, topLeft.y),
+      new Point(topLeft.x + this._width, topLeft.y + this._height / 2),
+      new Point(topLeft.x + this._width / 2, topLeft.y + this._height),
+      new Point(topLeft.x, topLeft.y + this._height / 2)
+    ];
+  }
+  move(dx, dy) {
+    for (let i = 0; i < this._shapes.length; i++) {
+      this._shapes[i].move(dx, dy);
+    }
+    super.move(dx, dy);
+  }
+  place(point) {
+    const anchor = this._points[0];
+    this.move(point.x - anchor.x, point.y - anchor.y);
+  }
+  /**
+   * Recomputes the bounding box (top‑left, width and height) from the union of
+   * every child’s connectable points, which mark each shape’s outer extents.
+   */
+  recalculate() {
+    if (this._shapes.length === 0) {
+      this._points[0] = new Point(0, 0);
+      this._width = 0;
+      this._height = 0;
+      return;
+    }
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (let i = 0; i < this._shapes.length; i++) {
+      const points = this._shapes[i].getConnectablePoints();
+      for (let j = 0; j < points.length; j++) {
+        const p = points[j];
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      }
+    }
+    this._points[0] = new Point(minX, minY);
+    this._width = maxX - minX;
+    this._height = maxY - minY;
+  }
+};
+
 // src/shape/Connection.ts
 var _Connection = class _Connection {
   constructor(source, target) {
     this._label = "";
     this._color = "black";
+    this._beam = false;
     this._source = source;
     this._target = target;
   }
@@ -484,7 +750,13 @@ var _Connection = class _Connection {
   set color(color) {
     this._color = color;
   }
-  render(ctx) {
+  get beam() {
+    return this._beam;
+  }
+  set beam(beam) {
+    this._beam = beam;
+  }
+  render(ctx, dashOffset = 0) {
     let srcPts = this._source.getConnectablePoints();
     let tgtPts = this._target.getConnectablePoints();
     let srcIdx = -1;
@@ -526,8 +798,6 @@ var _Connection = class _Connection {
       }
     }
     if (min !== Infinity) {
-      ctx.lineWidth = _Connection.LINE_WIDTH;
-      ctx.strokeStyle = this._color;
       ctx.beginPath();
       if (srcIdx % 2 == tgtIdx % 2) {
         const middle = new Point((pair[0].x + pair[1].x) / 2, (pair[0].y + pair[1].y) / 2);
@@ -553,8 +823,20 @@ var _Connection = class _Connection {
         ctx.lineTo(corner.x, corner.y + offsetY);
         ctx.lineTo(pair[1].x + offsetX, pair[1].y + offsetY);
       }
+      ctx.lineWidth = _Connection.LINE_WIDTH;
+      ctx.strokeStyle = this._color;
       ctx.stroke();
-      ctx.closePath();
+      if (this._beam) {
+        ctx.save();
+        ctx.lineWidth = _Connection.LINE_WIDTH;
+        ctx.strokeStyle = _Connection.BEAM_COLOR;
+        ctx.shadowColor = _Connection.BEAM_COLOR;
+        ctx.shadowBlur = 10;
+        ctx.setLineDash([10, 14]);
+        ctx.lineDashOffset = -dashOffset;
+        ctx.stroke();
+        ctx.restore();
+      }
     }
     this.renderArrowHead(ctx, pair[1].x, pair[1].y, angle, size);
   }
@@ -597,6 +879,7 @@ var _Connection = class _Connection {
   }
 };
 _Connection.LINE_WIDTH = 2;
+_Connection.BEAM_COLOR = "#67e8f9";
 var Connection = _Connection;
 
 // src/renderer/ShapeRenderer.ts
@@ -779,6 +1062,140 @@ var RectangleRenderer = class extends ShapeRenderer {
   }
 };
 
+// src/renderer/CloudRenderer.ts
+var CloudRenderer = class extends ShapeRenderer {
+  render(ctx, shape) {
+    const cloud = shape;
+    const cx = cloud.center.x;
+    const cy = cloud.center.y;
+    const w = cloud.width;
+    const h = cloud.height || w * 0.74;
+    const x = cx - w / 2;
+    const y = cy - h / 2;
+    if (cloud.backgroundColor) {
+      ctx.save();
+      ctx.translate(0, 6);
+      this.defineCloudPath(ctx, x, y, w, h);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+      ctx.fill();
+      ctx.restore();
+    }
+    this.defineCloudPath(ctx, x, y, w, h);
+    if (cloud.backgroundColor) {
+      ctx.fillStyle = cloud.backgroundColor.hex;
+      ctx.fill();
+    }
+    if (cloud.borderWidth > 0) {
+      ctx.lineWidth = cloud.borderWidth;
+      ctx.strokeStyle = cloud.borderColor.hex;
+      ctx.stroke();
+    } else if (cloud.backgroundColor) {
+      ctx.strokeStyle = cloud.backgroundColor.hex;
+      ctx.stroke();
+    }
+    if (shape.text != "") {
+      ctx.save();
+      ctx.fillStyle = shape.foregroundColor.hex;
+      const textX = cx - w * 0.06;
+      const textY = cy + h * 0.12;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(shape.text, textX, textY);
+      ctx.restore();
+    }
+  }
+  /**
+   * 完美无缝契合包围盒 [x, x+w] 的云朵路径定义，彻底消除左右侧箭头的所有多余空隙
+   */
+  defineCloudPath(ctx, x, y, w, h) {
+    const baseY = y + 0.85 * h;
+    ctx.beginPath();
+    ctx.moveTo(x + 0.15 * w, baseY);
+    ctx.bezierCurveTo(
+      x + 0.06 * w,
+      baseY + 0.05 * h,
+      x - 0.06 * w,
+      y + 0.65 * h,
+      x + 0.08 * w,
+      y + 0.54 * h
+    );
+    ctx.bezierCurveTo(
+      x + 0.04 * w,
+      y + 0.34 * h,
+      x + 0.2 * w,
+      y + 0.28 * h,
+      x + 0.26 * w,
+      y + 0.38 * h
+    );
+    ctx.bezierCurveTo(
+      x + 0.3 * w,
+      y + 0.1 * h,
+      x + 0.48 * w,
+      y + 0.1 * h,
+      x + 0.52 * w,
+      y + 0.35 * h
+    );
+    ctx.bezierCurveTo(
+      x + 0.58 * w,
+      y + 0.24 * h,
+      x + 0.84 * w,
+      y + 0.28 * h,
+      x + 0.88 * w,
+      y + 0.48 * h
+    );
+    ctx.bezierCurveTo(
+      x + 1.08 * w,
+      y + 0.6 * h,
+      x + 1 * w,
+      baseY + 0.05 * h,
+      x + 0.88 * w,
+      baseY
+    );
+    ctx.lineTo(x + 0.15 * w, baseY);
+    ctx.closePath();
+  }
+};
+
+// src/renderer/CylinderRenderer.ts
+var CylinderRenderer = class extends ShapeRenderer {
+  render(ctx, shape) {
+    const cyl = shape;
+    const cx = cyl.center.x;
+    const cy = cyl.center.y;
+    const rx = cyl.width / 2;
+    const ry = cyl.capRadius;
+    const left = cx - rx;
+    const right = cx + rx;
+    const top = cy - cyl.height / 2;
+    const bottom = cy + cyl.height / 2;
+    ctx.beginPath();
+    ctx.moveTo(right, top + ry);
+    ctx.lineTo(right, bottom - ry);
+    ctx.ellipse(cx, bottom - ry, rx, ry, 0, 0, Math.PI);
+    ctx.lineTo(left, top + ry);
+    ctx.moveTo(right, top + ry);
+    ctx.ellipse(cx, top + ry, rx, ry, 0, 0, Math.PI * 2);
+    if (cyl.backgroundColor) {
+      ctx.fillStyle = cyl.backgroundColor.hex;
+      ctx.fill();
+    }
+    if (cyl.borderWidth > 0) {
+      ctx.lineWidth = cyl.borderWidth;
+      ctx.strokeStyle = cyl.borderColor.hex;
+      ctx.stroke();
+    } else if (cyl.backgroundColor) {
+      ctx.strokeStyle = cyl.backgroundColor.hex;
+      ctx.stroke();
+    }
+    if (shape.text != "") {
+      ctx.fillStyle = shape.foregroundColor.hex;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(shape.text, cx, cy + cyl.height * 0.28);
+    }
+  }
+};
+
 // src/paint/FlatPlayground.ts
 var _FlatPlayground = class _FlatPlayground {
   constructor(ctx, width, height) {
@@ -786,6 +1203,8 @@ var _FlatPlayground = class _FlatPlayground {
     this._height = 0;
     this._shapes = [];
     this._connections = [];
+    this._dashOffset = 0;
+    this._animationId = null;
     this._ctx = ctx;
     this._width = width;
     this._height = height;
@@ -795,21 +1214,93 @@ var _FlatPlayground = class _FlatPlayground {
     this.drawBackground();
     const shapes = this._shapes.sort((a, b) => a.depth - a.depth);
     for (let i = 0; i < shapes.length; i++) {
-      const shape = shapes[i];
-      if (shape instanceof Circle) {
-        _FlatPlayground.CIRCLE_RENDERER.render(this._ctx, shape);
-      } else if (shape instanceof Square) {
-        _FlatPlayground.SQUARE_RENDERER.render(this._ctx, shape);
-      } else if (shape instanceof Rectangle) {
-        _FlatPlayground.RECTANGLE_RENDERER.render(this._ctx, shape);
-      } else if (shape instanceof Diamond) {
-        _FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
-      }
+      this.renderShape(shapes[i]);
     }
     for (let i = 0; i < this._connections.length; i++) {
       this._connections[i].color = "#888";
-      this._connections[i].render(this._ctx);
+      this._connections[i].render(this._ctx, this._dashOffset);
     }
+  }
+  /**
+   * Starts a requestAnimationFrame loop that advances the beam dash offset and
+   * re-renders, so {@link Connection} beams appear to flow. No-op if already
+   * running.
+   */
+  startBeamAnimation() {
+    if (this._animationId != null) {
+      return;
+    }
+    const tick = () => {
+      this._dashOffset = (this._dashOffset + 0.3) % 24;
+      this.render();
+      this._animationId = requestAnimationFrame(tick);
+    };
+    this._animationId = requestAnimationFrame(tick);
+  }
+  /**
+   * Renders a single shape, recursing into {@link Group} children and drawing
+   * a dashed frame around the group’s bounding box.
+   */
+  renderShape(shape) {
+    if (shape instanceof Group) {
+      for (let i = 0; i < shape.shapes.length; i++) {
+        this.renderShape(shape.shapes[i]);
+      }
+      this.renderGroupFrame(shape);
+      return;
+    }
+    if (shape instanceof Circle) {
+      _FlatPlayground.CIRCLE_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Square) {
+      _FlatPlayground.SQUARE_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Rectangle) {
+      _FlatPlayground.RECTANGLE_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Diamond) {
+      _FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Cloud) {
+      _FlatPlayground.CLOUD_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Cylinder) {
+      _FlatPlayground.CYLINDER_RENDERER.render(this._ctx, shape);
+    }
+  }
+  /**
+   * Draws the dashed frame around a group’s children, padded outward from the
+   * bounding box and with rounded corners. A title bar is reserved at the top.
+   */
+  renderGroupFrame(group) {
+    const pad = group.padding;
+    const titleH = 16;
+    const titleGap = 8;
+    const x = group.topLeft.x - pad;
+    const y = group.topLeft.y - pad - titleH - titleGap;
+    const w = group.width + pad * 2;
+    const h = group.height + pad * 2 + titleH + titleGap;
+    const r = Math.min(12, w / 2, h / 2);
+    const ctx = this._ctx;
+    ctx.save();
+    ctx.setLineDash([10, 6]);
+    ctx.strokeStyle = "#94a3b8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.stroke();
+    if (group.title != "") {
+      ctx.fillStyle = "#cbd5e1";
+      ctx.font = "bold 13px sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(group.title, x + pad, y + pad + titleH / 2);
+    }
+    ctx.restore();
   }
   select(x, y) {
     let retVal = null;
@@ -923,5 +1414,165 @@ _FlatPlayground.CIRCLE_RENDERER = new CircleRenderer();
 _FlatPlayground.SQUARE_RENDERER = new SquareRenderer();
 _FlatPlayground.RECTANGLE_RENDERER = new RectangleRenderer();
 _FlatPlayground.DIAMOND_RENDERER = new DiamondRenderer();
+_FlatPlayground.CLOUD_RENDERER = new CloudRenderer();
+_FlatPlayground.CYLINDER_RENDERER = new CylinderRenderer();
 var FlatPlayground = _FlatPlayground;
+
+// src/dot/Dot.ts
+var Dot = class {
+  static parse(text) {
+    const statements = this.tokenize(this.extractBody(text));
+    const nodeDefs = /* @__PURE__ */ new Map();
+    const edgePairs = [];
+    for (const stmt of statements) {
+      if (stmt.indexOf("->") !== -1 || stmt === "{" || stmt === "}") continue;
+      if (/^(digraph|graph|subgraph)\b/.test(stmt)) continue;
+      const m = stmt.match(/^([A-Za-z0-9_一-龥]+)\s*(?:\[(.*)\])?$/);
+      if (m) {
+        nodeDefs.set(m[1], this.parseAttrs(m[2] ? "[" + m[2] + "]" : ""));
+      }
+    }
+    for (const stmt of statements) {
+      if (stmt.indexOf("->") === -1) continue;
+      const ids = this.stripAttrs(stmt).split("->").map((s) => s.trim()).filter((s) => s !== "");
+      for (let i = 0; i < ids.length - 1; i++) {
+        edgePairs.push([ids[i], ids[i + 1]]);
+      }
+    }
+    for (const [from, to] of edgePairs) {
+      if (!nodeDefs.has(from)) nodeDefs.set(from, { label: from });
+      if (!nodeDefs.has(to)) nodeDefs.set(to, { label: to });
+    }
+    const shapeById = /* @__PURE__ */ new Map();
+    const groups = /* @__PURE__ */ new Map();
+    const shapes = [];
+    for (const [id, attrs] of nodeDefs) {
+      const shape = this.createShape(id, attrs);
+      shapeById.set(id, shape);
+      const g = attrs.group;
+      if (g !== void 0 && g !== "") {
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(shape);
+      } else {
+        shapes.push(shape);
+      }
+    }
+    for (const [g, members] of groups) {
+      const group = new Group(members);
+      group.id = g;
+      group.title = g;
+      shapes.push(group);
+    }
+    const edges = [];
+    for (const [from, to] of edgePairs) {
+      const a = shapeById.get(from);
+      const b = shapeById.get(to);
+      if (a && b) edges.push({ from: a, to: b });
+    }
+    return { shapes, edges };
+  }
+  static extractBody(text) {
+    const open = text.indexOf("{");
+    const close = text.lastIndexOf("}");
+    if (open !== -1 && close > open) {
+      return text.slice(open + 1, close);
+    }
+    return text;
+  }
+  static tokenize(body) {
+    return body.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "").split(/[;\n]/).map((s) => s.trim()).filter((s) => s.length > 0);
+  }
+  static stripAttrs(stmt) {
+    const idx = stmt.indexOf("[");
+    return idx === -1 ? stmt : stmt.slice(0, idx);
+  }
+  static parseAttrs(s) {
+    const attrs = {};
+    const m = s.match(/\[(.*)\]/);
+    if (!m) return attrs;
+    for (const part of m[1].split(",")) {
+      const eq = part.indexOf("=");
+      if (eq === -1) continue;
+      const key = part.slice(0, eq).trim();
+      let val = part.slice(eq + 1).trim();
+      if (val.startsWith('"') && val.endsWith('"') || val.startsWith("'") && val.endsWith("'")) {
+        val = val.slice(1, -1);
+      }
+      attrs[key] = val;
+    }
+    return attrs;
+  }
+  static createShape(id, attrs) {
+    const label = attrs.label !== void 0 ? attrs.label : id;
+    const type = (attrs.shape || "box").toLowerCase();
+    const x = this.toNumber(attrs.x, 0);
+    const y = this.toNumber(attrs.y, 0);
+    const z = this.toNumber(attrs.z, 0);
+    const fill = this.toColor(attrs.fillcolor, Color.from("#38bdf866"));
+    const border = this.toColor(attrs.color, Color.from("#38bdf8"));
+    let shape;
+    switch (type) {
+      case "circle":
+      case "ellipse": {
+        const r = this.toNumber(attrs.r, 32);
+        shape = new Circle(new Point(x, y, z), r);
+        break;
+      }
+      case "square": {
+        const side = this.toNumber(attrs.w, this.toNumber(attrs.side, 64));
+        shape = new Square(new Point(x, y, z), side);
+        break;
+      }
+      case "diamond": {
+        const w = this.toNumber(attrs.w, 110);
+        const h = this.toNumber(attrs.h, 56);
+        shape = new Diamond(new Point(x, y, z), w, h);
+        break;
+      }
+      case "cloud": {
+        const w = this.toNumber(attrs.w, 140);
+        const h = this.toNumber(attrs.h, 60);
+        shape = new Cloud(new Point(x, y, z), w, h);
+        break;
+      }
+      case "cylinder": {
+        const w = this.toNumber(attrs.w, 120);
+        const h = this.toNumber(attrs.h, 60);
+        shape = new Cylinder(new Point(x, y, z), w, h);
+        break;
+      }
+      case "box":
+      case "rect":
+      case "rectangle":
+      default: {
+        const w = this.toNumber(attrs.w, 140);
+        const h = this.toNumber(attrs.h, 56);
+        shape = new Rectangle(new Point(x, y, z), w, h);
+        break;
+      }
+    }
+    shape.id = id;
+    shape.text = label;
+    shape.backgroundColor = fill;
+    shape.borderColor = border;
+    shape.borderWidth = 2;
+    shape.foregroundColor = Color.white;
+    shape.borderRadius = 10;
+    return shape;
+  }
+  static toNumber(value, fallback) {
+    if (value === void 0) return fallback;
+    const n = parseFloat(value);
+    return isNaN(n) ? fallback : n;
+  }
+  static toColor(value, fallback) {
+    if (!value) return fallback;
+    try {
+      return Color.from(value);
+    } catch (e) {
+      return fallback;
+    }
+  }
+};
+Dot.VERSION = "1.0.0";
 //# sourceMappingURL=paint-shapes.js.map

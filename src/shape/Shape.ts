@@ -155,6 +155,21 @@ export abstract class Shape {
   }
 
   /**
+   * Moves every point of the shape by the given delta (dx, dy).
+   *
+   * Used by {@link Group} to translate its children together. For shapes that
+   * keep a center (e.g. Circle, Diamond) the first point is the same object as
+   * that center, so shifting it also updates the center automatically.
+   */
+  move(dx: number, dy: number): void {
+    for (let i = 0; i < this._points.length; i++) {
+      const p = this._points[i];
+      p.x += dx;
+      p.y += dy;
+    }
+  }
+
+  /**
    * Gets offset relative to the top-left point according to the given point.
    */
   offset(point: Point): Point {

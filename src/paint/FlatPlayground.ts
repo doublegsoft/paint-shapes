@@ -9,6 +9,9 @@ import {Circle} from "@/shape/Circle";
 import {Square} from "@/shape/Square";
 import {Diamond} from "@/shape/Diamond";
 import {Rectangle} from "@/shape/Rectangle";
+import {Cloud} from "@/shape/Cloud";
+import {Cylinder} from "@/shape/Cylinder";
+import {Group} from "@/shape/Group";
 import {Connection} from "@/shape/Connection";
 import {Point} from "@/common/Point";
 import {Color} from "@/common/Color";
@@ -17,6 +20,8 @@ import {CircleRenderer} from "@/renderer/CircleRenderer";
 import {SquareRenderer} from "@/renderer/SquareRenderer";
 import {DiamondRenderer} from "@/renderer/DiamondRenderer";
 import {RectangleRenderer} from "@/renderer/RectangleRenderer";
+import {CloudRenderer} from "@/renderer/CloudRenderer";
+import {CylinderRenderer} from "@/renderer/CylinderRenderer";
 
 
 export class FlatPlayground {
@@ -29,6 +34,10 @@ export class FlatPlayground {
 
   public static DIAMOND_RENDERER: DiamondRenderer = new DiamondRenderer();
 
+  public static CLOUD_RENDERER: CloudRenderer = new CloudRenderer();
+
+  public static CYLINDER_RENDERER: CylinderRenderer = new CylinderRenderer();
+
   private _width: number = 0;
 
   private _height: number = 0;
@@ -36,6 +45,10 @@ export class FlatPlayground {
   private _shapes: Shape[] = [];
 
   private _connections: Connection[] = [];
+
+  private _dashOffset: number = 0;
+
+  private _animationId: number | null = null;
 
   private readonly _ctx: CanvasRenderingContext2D;
 
@@ -50,22 +63,101 @@ export class FlatPlayground {
     this.drawBackground();
     const shapes = this._shapes.sort((a, b) => a.depth - a.depth);
     for (let i = 0; i < shapes.length; i++) {
-      const shape = shapes[i];
-      if (shape instanceof Circle) {
-        FlatPlayground.CIRCLE_RENDERER.render(this._ctx, shape);
-      } else if (shape instanceof Square) {
-        FlatPlayground.SQUARE_RENDERER.render(this._ctx, shape);
-      } else if (shape instanceof Rectangle) {
-        FlatPlayground.RECTANGLE_RENDERER.render(this._ctx, shape);
-      }else if (shape instanceof Diamond) {
-        FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
-      }
+      this.renderShape(shapes[i]);
     }
 
     for (let i = 0; i < this._connections.length; i++) {
       this._connections[i].color = '#888';
-      this._connections[i].render(this._ctx);
+      this._connections[i].render(this._ctx, this._dashOffset);
     }
+  }
+
+  /**
+   * Starts a requestAnimationFrame loop that advances the beam dash offset and
+   * re-renders, so {@link Connection} beams appear to flow. No-op if already
+   * running.
+   */
+  startBeamAnimation(): void {
+    if (this._animationId != null) {
+      return;
+    }
+    const tick = () => {
+      // 每帧递增 0.3，值越小流动越慢
+      this._dashOffset = (this._dashOffset + 0.3) % 24;
+      this.render();
+      this._animationId = requestAnimationFrame(tick);
+    };
+    this._animationId = requestAnimationFrame(tick);
+  }
+
+  /**
+   * Renders a single shape, recursing into {@link Group} children and drawing
+   * a dashed frame around the group’s bounding box.
+   */
+  private renderShape(shape: Shape): void {
+    if (shape instanceof Group) {
+      for (let i = 0; i < shape.shapes.length; i++) {
+        this.renderShape(shape.shapes[i]);
+      }
+      this.renderGroupFrame(shape as Group);
+      return;
+    }
+
+    if (shape instanceof Circle) {
+      FlatPlayground.CIRCLE_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Square) {
+      FlatPlayground.SQUARE_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Rectangle) {
+      FlatPlayground.RECTANGLE_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Diamond) {
+      FlatPlayground.DIAMOND_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Cloud) {
+      FlatPlayground.CLOUD_RENDERER.render(this._ctx, shape);
+    } else if (shape instanceof Cylinder) {
+      FlatPlayground.CYLINDER_RENDERER.render(this._ctx, shape);
+    }
+  }
+
+  /**
+   * Draws the dashed frame around a group’s children, padded outward from the
+   * bounding box and with rounded corners. A title bar is reserved at the top.
+   */
+  private renderGroupFrame(group: Group): void {
+    const pad = group.padding;
+    const titleH = 16;
+    const titleGap = 8;
+    const x = group.topLeft.x - pad;
+    const y = group.topLeft.y - pad - titleH - titleGap;
+    const w = group.width + pad * 2;
+    const h = group.height + pad * 2 + titleH + titleGap;
+    const r = Math.min(12, w / 2, h / 2);
+
+    const ctx = this._ctx;
+    ctx.save();
+    ctx.setLineDash([10, 6]);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.stroke();
+
+    if (group.title != '') {
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = 'bold 13px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(group.title, x + pad, y + pad + titleH / 2);
+    }
+    ctx.restore();
   }
 
   select(x: number, y: number): Shape {

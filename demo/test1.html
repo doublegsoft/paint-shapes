@@ -25,69 +25,41 @@ var selectedOffset = null;
 var isDragging = false;
 var playground = new FlatPlayground(ctx, 800 * scale, 600 * scale);
 
-var start = new Circle(new Point(125, 100), 25);
-start.id = 'circle';
-start.text = '开始';
-start.backgroundColor = Color.from('#fb718566');
-start.borderColor = Color.from('#fb7185');
-start.borderWidth = 2;
-start.foregroundColor = new Color(255, 255, 255);
-playground.addShape(start);
+// 用 DOT 语法描述图，节点坐标通过自定义属性 x/y/z 指定（不做自动布局）
+var dot = `
+digraph flow {
+  start     [label="开始", shape=circle, x=125, y=100, z=0, r=25, color="#fb7185", fillcolor="#fb718566"];
+  square    [label="远程调用", shape=square, x=100, y=200, z=0, w=50, color="#22d3ee", fillcolor="#22d3ee66"];
+  diamond   [label="Are you OK?", shape=diamond, x=300, y=225, z=0, w=100, h=50, group="示例分组", color="#34d399", fillcolor="#34d39966"];
+  rectangle [label="This is a rectangle!", shape=box, x=250, y=350, z=0, w=100, h=50, group="示例分组", color="#a78bfa", fillcolor="#a78bfa66"];
+  rect1     [label="This is rect!", shape=box, x=450, y=200, z=0, w=100, h=50, color="#f97316", fillcolor="#f9731666"];
+  end       [label="结束", shape=circle, x=500, y=375, z=0, r=25, color="#fb7185", fillcolor="#fb718566"];
 
-var square = new Square(new Point(100, 200), 50);
-square.id = 'square';
-square.text = '远程调用';
-square.borderRadius = 10;
-square.backgroundColor = Color.from('#22d3ee66');
-square.borderColor = Color.from('#22d3ee');
-square.borderWidth = 2;
-square.foregroundColor = new Color(255, 255, 255);
-playground.addShape(square);
+  start -> square;
+  square -> diamond;
+  diamond -> rect1;
+  diamond -> rectangle;
+  rect1 -> end;
+  rectangle -> end;
+}
+`;
 
-var diamond = new Diamond(new Point(300, 225), 100, 50);
-diamond.id = 'diamond';
-diamond.text = 'Are you OK?';
-diamond.backgroundColor = Color.from('#34d39966');
-diamond.borderColor = Color.from('#34d399');
-diamond.borderWidth = 2;
-diamond.foregroundColor = new Color(255, 255, 255);
-playground.addShape(diamond);
+var graph = Dot.parse(dot);
+for (let shape of graph.shapes) {
+  playground.addShape(shape);
+}
+for (let edge of graph.edges) {
+  playground.connect(edge.from, edge.to);
+}
 
-var rectangle = new Rectangle(new Point(250, 350), 100, 50);
-rectangle.id = 'rectangle';
-rectangle.text = 'This is a rectangle!';
-rectangle.borderRadius = 10;
-rectangle.backgroundColor = Color.from('#a78bfa66');
-rectangle.borderColor = Color.from('#a78bfa');
-rectangle.borderWidth = 2;
-rectangle.foregroundColor = new Color(255, 255, 255);
-playground.addShape(rectangle);
-
-var rect1 = new Rectangle(new Point(450, 200), 100, 50);
-rect1.id = 'rect1';
-rect1.text = 'This is rect!';
-rect1.borderRadius = 10;
-rect1.backgroundColor = Color.from('#f9731666');
-rect1.borderColor = Color.from('#f97316');
-rect1.borderWidth = 2;
-rect1.foregroundColor = new Color(255, 255, 255);
-playground.addShape(rect1);
-
-var end = new Circle(new Point(500, 375), 25);
-end.id = 'circle';
-end.text = '结束';
-end.backgroundColor = Color.from('#fb718566');
-end.borderColor = Color.from('#fb7185');
-end.borderWidth = 2;
-end.foregroundColor = new Color(255, 255, 255);
-playground.addShape(end);
-
-playground.connect(start, square);
-playground.connect(square, diamond);
-playground.connect(diamond, rect1);
-playground.connect(diamond, rectangle);
-playground.connect(rect1, end);
-playground.connect(rectangle, end);
+// 光束效果开关：改成 false 即关闭流动光束
+var beamEnabled = true;
+if (beamEnabled) {
+  for (let conn of playground.getConnections()) {
+    conn.beam = true;
+  }
+  playground.startBeamAnimation();
+}
 
 // playground.drawQuadraticCurveWithArrow(new Point(50, 50), new Point(200, 200), 50);
 
